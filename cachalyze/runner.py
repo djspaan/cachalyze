@@ -1,4 +1,5 @@
-from cachalyze.parser import parse
+from cachalyze.parser import Parser
+
 
 def run():
-    parse("/home/dennis/Workspace/cachalyze/data/cachegrind.out.15404")
+    output = Parser().parse("/home/dennis/Workspace/cachalyze/data/cachegrind.out.15404")
