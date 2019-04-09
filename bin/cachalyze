@@ -1,0 +1,7 @@
+#/usr/bin/python
+class Main:
+    @staticmethod
+    def run():
+        print("running!")
+
+Main.run()
