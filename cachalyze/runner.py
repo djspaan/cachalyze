@@ -1,5 +1,5 @@
-from cachalyze.parser import Parser
+from cachalyze.cgparser import CGParser
 
 
 def run():
-    output = Parser().parse("/home/dennis/Workspace/cachalyze/data/cachegrind.out.15404")
+    output = CGParser().parse("/home/dennis/Workspace/cachalyze/data/cachegrind.out.15404")

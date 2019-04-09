@@ -21,10 +21,10 @@ Where:
     - ws is whitespace.
 
 """
-from cachalyze.data import CGOutput, CGFile, CGFunction, CGLine, CGEvents
+from cachalyze.cgdata import CGOutput, CGFile, CGFunction, CGLine, CGEvents
 
 
-class Parser:
+class CGParser:
     output = CGOutput()
 
     curr_file = None

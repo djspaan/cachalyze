@@ -23,7 +23,6 @@ class CGOutput:
         for event in self.events:
             if event not in self.summary.__dict__:
                 raise Exception('Event {} not an attribute of CGEvents.'.format(event))
-        return True
 
 
 class CGFile:
