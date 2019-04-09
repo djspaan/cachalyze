@@ -1,7 +1,4 @@
 #/usr/bin/python
-class Main:
-    @staticmethod
-    def run():
-        print("running!")
+from cachalyze.runner import run
 
-Main.run()
+run()
