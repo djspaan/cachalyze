@@ -40,6 +40,18 @@ class CGFile:
     def get_lines(self):
         return [l for f in self.functions for l in f.lines.values()]
 
+    def get_lines_with_events(self):
+        result = []
+        self.get_content_lines()
+        cglines = self.get_lines()
+        for i, line in enumerate(self.content):
+            line_events = CGEvents()
+            line_cglines = list(filter(lambda l: l.number == i + 1, cglines))
+            for cgline in line_cglines:
+                line_events.add(cgline.events)
+            result.append((i + 1, line, line_events))
+        return result
+
     def get_content_lines(self):
         if self.content:
             return self.content
@@ -83,9 +95,7 @@ class CGFunction:
 
 
 class CGLine:
-    def __init__(self, file, function, number, *args):
-        self.file = file
-        self.function = function
+    def __init__(self, number, *args):
         self.number = number
         self.events = CGEvents(*args)
 

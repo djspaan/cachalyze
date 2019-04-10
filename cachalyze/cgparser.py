@@ -40,7 +40,7 @@ class CGParser:
 
     def cg_out_count_line(self, line):
         counts = self.read_count_line(line)
-        line = CGLine(self.curr_file, self.curr_function, *counts)
+        line = CGLine(*counts)
         self.curr_function.add_line(line)
 
     def cg_out_fn_line(self, line):
