@@ -9,4 +9,4 @@ def run():
     file = funcs[0].file
     print(file.path)
     for line, content, events in file.get_lines_with_events():
-        print("{} {} {}".format(events, line, content))
+        print('{} {}'.format(events.format(), content))

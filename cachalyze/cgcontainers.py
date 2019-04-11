@@ -53,16 +53,14 @@ class CGFile:
         return result
 
     def get_content_lines(self):
-        if self.content:
-            return self.content
-        self.read_content()
-        return self.content
+        return self.content or self.read_content()
 
     def read_content(self):
         file = open(self.path, 'r')
         for line in file.readlines():
             self.content.append(line.rstrip())
         file.close()
+        return self.content
 
     def add_function(self, function):
         if function in self.functions:
@@ -113,15 +111,12 @@ class CGEvents:
         self.DLmw = DLmw
 
     def add(self, events):
-        self.Ir += events.Ir
-        self.I1mr += events.I1mr
-        self.ILmr += events.ILmr
-        self.Dr += events.Dr
-        self.D1mr += events.D1mr
-        self.DLmr += events.DLmr
-        self.Dw += events.Dw
-        self.D1mw += events.D1mw
-        self.DLmw += events.DLmw
+        for event in self.__dict__.keys():
+            self.__dict__[event] += events.__dict__[event]
+
+    def format(self, width=10):
+        return '{:{width}} {:{width}} {:{width}} {:{width}} {:{width}} {:{width}} {:{width}} {:{width}} {:{width}}' \
+            .format(self.Ir, self.I1mr, self.ILmr, self.Dr, self.D1mr, self.DLmr, self.Dw, self.D1mw, self.DLmw, width=width)
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
