@@ -81,7 +81,7 @@ class CGParser:
         elif line.startswith('summary: '):
             self.cg_out_summary_line(line[9:])
         else:
-            pass # TODO: Add field for unknown lines
+            self.output.unknown_lines.append(line)
 
     def parse(self, path):
         file = open(path, 'r')

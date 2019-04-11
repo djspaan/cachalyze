@@ -5,6 +5,7 @@ class CGOutput:
         self.cmd = ''
         self.events = []
         self.summary = CGEvents()
+        self.unknown_lines = []
 
     def get_functions(self):
         return [function for file in self.files for function in file.functions.values()]
