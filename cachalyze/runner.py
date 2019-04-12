@@ -7,6 +7,13 @@ def run():
     analyzer = CGAnalyzer(output)
     funcs = analyzer.get_thresholded_functions()
     file = funcs[0].file
+
+    # for func in output.get_functions():
+    #     print('{} {}'.format(func.events, func))
+
     print(file.path)
+    for event in output.events:
+        print('{:>11}'.format(event), end='')
+    print('')
     for line, content, events in file.get_lines_with_events():
         print('{} {}'.format(events.format(), content))
