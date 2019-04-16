@@ -21,14 +21,17 @@ Where:
     - ws is whitespace.
 
 """
+
 from cachalyze.cgcontainers import CGOutput, CGFile, CGFunction, CGLine, CGEvents
 
 
 class CGParser:
-    output = CGOutput()
-
     curr_file = None
     curr_function = None
+
+    def __init__(self, path):
+        self.output = CGOutput()
+        self.path = path
 
     @staticmethod
     def read_count_line(line):
@@ -61,7 +64,7 @@ class CGParser:
         self.output.cmd = line
 
     def cg_out_desc_line(self, line):
-        self.output.description.append(line)
+        self.output.description.append(line.strip())
 
     def handle_line(self, line):
         if line.startswith('#'):
@@ -83,8 +86,8 @@ class CGParser:
         else:
             self.output.unknown_lines.append(line)
 
-    def parse(self, path):
-        file = open(path, 'r')
+    def parse(self):
+        file = open(self.path, 'r')
         for line in file:
             self.handle_line(line.strip())
         file.close()

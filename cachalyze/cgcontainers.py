@@ -1,3 +1,6 @@
+import re
+
+
 class CGOutput:
     def __init__(self):
         self.files = []
@@ -7,8 +10,26 @@ class CGOutput:
         self.summary = CGEvents()
         self.unknown_lines = []
 
+    def get_specs(self):
+        specs = {}
+        for desc in self.description:
+            m = re.match(r'^(I1|D1|LL) cache:[ ]+(\d+) B, (\d+) B, (\d+).+$', desc)
+            if m:
+                specs[m[1]] = {'size': m[2], 'line_size': m[3], 'assoc': m[4]}
+        return specs
+
     def get_functions(self):
         return [function for file in self.files for function in file.functions.values()]
+
+    def get_events(self):
+        return self.events or self.calculate_events()
+
+    def calculate_events(self):
+        events = CGEvents()
+        for file in self.files:
+            for function in file.functions.values():
+                events.add(function.events)
+        return events
 
     def verify(self):
         self.verify_events()
@@ -117,11 +138,12 @@ class CGEvents:
 
     def format(self, width=10):
         return '{:{width}} {:{width}} {:{width}} {:{width}} {:{width}} {:{width}} {:{width}} {:{width}} {:{width}}' \
-            .format(self.Ir, self.I1mr, self.ILmr, self.Dr, self.D1mr, self.DLmr, self.Dw, self.D1mw, self.DLmw, width=width)
+            .format(self.Ir, self.I1mr, self.ILmr, self.Dr, self.D1mr, self.DLmr, self.Dw, self.D1mw, self.DLmw,
+                    width=width, grouping=True)
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
     def __str__(self):
-        return '{} {} {} {} {} {} {} {} {}' \
+        return '{:,}  {:,}  {:,}  {:,}  {:,}  {:,}  {:,}  {:,}  {:,}' \
             .format(self.Ir, self.I1mr, self.ILmr, self.Dr, self.D1mr, self.DLmr, self.Dw, self.D1mw, self.DLmw)
