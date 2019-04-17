@@ -1,4 +1,4 @@
-import os
+import asyncio
 import time
 
 from cachalyze.cgparser import CGParser
@@ -16,8 +16,13 @@ class CGRunner:
         cmd += ' ' + self.program
         return cmd
 
-    def run(self):
+    async def run_command(self):
+        proc = await asyncio.create_subprocess_shell(self.get_cmd(), stdout=asyncio.subprocess.PIPE,
+                                                     stderr=asyncio.subprocess.PIPE)
+        await proc.communicate()
+
+    async def run(self):
         self.options.append('--cachegrind-out-file=' + self.output_file)
-        os.system(self.get_cmd())
+        await self.run_command()
         parser = CGParser(self.output_file)
         return parser.parse()
