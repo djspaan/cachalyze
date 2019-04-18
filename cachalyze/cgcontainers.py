@@ -38,7 +38,7 @@ class CGOutput:
     def verify_events(self):
         for event in self.events:
             if event not in self.summary.__dict__:
-                raise Exception('Event {} not an attribute of CGEvents.'.format(event))
+                raise Exception(f'Event {event} not an attribute of CGEvents.')
 
     def verify_count(self):
         function_counts = CGEvents()
@@ -98,20 +98,23 @@ class CGFunction:
         self.lines = {}
         self.events = CGEvents()
 
+    def get_formatted_name(self) -> str:
+        return re.match(r'^(?:(?:^(?:/[^/]+)+)/|\?\?\?:)(.+)$', str(self))[1]
+
     def add_line(self, line):
         if line.number not in self.lines:
             self.lines[line.number] = line
         self.events.add(line.events)
 
     def merge(self, other):
-        if self.__str__() != other.__str__():
-            raise Exception('Merging of function {} not possible with function {}.'.format(self, other))
+        if str(self) != str(other):
+            raise Exception(f'Merging of function {self} not possible with function {other}.')
 
         for line in other.lines:
             self.add_line(line)
 
     def __str__(self):
-        return "{}:{}".format(self.file.path, self.name)
+        return f'{self.file.path}:{self.name}'
 
 
 class CGLine:
@@ -132,6 +135,10 @@ class CGEvents:
         self.D1mw = D1mw
         self.DLmw = DLmw
 
+    @staticmethod
+    def print_events():
+        print('Ir I1mr ILmr Dr D1mr DLmr Dw D1mw DLmw')
+
     def add(self, events):
         for event in self.__dict__.keys():
             self.__dict__[event] += events.__dict__[event]
@@ -145,5 +152,5 @@ class CGEvents:
         return self.__dict__ == other.__dict__
 
     def __str__(self):
-        return '{:,}  {:,}  {:,}  {:,}  {:,}  {:,}  {:,}  {:,}  {:,}' \
-            .format(self.Ir, self.I1mr, self.ILmr, self.Dr, self.D1mr, self.DLmr, self.Dw, self.D1mw, self.DLmw)
+        return f'{self.Ir:,}  {self.I1mr:,}  {self.ILmr:,}  {self.Dr:,} \
+         {self.D1mr:,}  {self.DLmr:,}  {self.Dw:,}  {self.D1mw:,}  {self.DLmw:,}'

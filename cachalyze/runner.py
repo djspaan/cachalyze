@@ -4,17 +4,22 @@ from math import ceil
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-# from cachalyze.cganalyzer import CGAnalyzer
+from cachalyze.cganalyzer import CGAnalyzer
 # from cachalyze.cgparser import CGParser
-from cachalyze.cgrunner import CGRunner
+from cachalyze.cgrunner import CGRunner, CGRunConf, D1CacheConf, LLCacheConf
+
+N_THREADS = 4
 
 
 def run():
+    pass
+
     # RUN AND SAVE CG
-    cg('D1', 'bad_cacher')
+    # cg('good_cacher')
 
     # PLOT D1 STATISTICS
-    # plot_d1('bad_cacher')
+    # plot_app_d1('bad_cacher')
+    # plot_funcs_d1('bad_cacher')
 
     # THRESHOLDED FUNCTIONS
     # analyzer = CGAnalyzer(output)
@@ -32,44 +37,104 @@ def run():
     #     print('{} {}'.format(events.format(), content))
 
 
-async def cg_run_size(program, cache_level, params=[]):
-    params = [8192, 16384, 32768, 65536, 131072, 262144]  # ll sizes
-    runs = [await CGRunner('data/sample_programs/' + program,
-                           ['--{}={},16,64'.format(cache_level, str(param))]).run() for param in params]
-    pickle.dump(runs, open('out/' + program + '-' + cache_level + '-size.bin', 'w+b'))
+async def cg_run_conf(conf):
+    await CGRunner(conf).run_async()
 
 
-async def cg_run_assoc(program, cache_level, params=[]):
-    params = [2, 4, 8, 16, 32, 64]  # n-ways set assoc
-    runs = [await CGRunner('data/sample_programs/' + program,
-                     ['--{}=8388608,{},64'.format(cache_level, str(param))]).run() for param in params]
-    pickle.dump(runs, open('out/' + program + '-' + cache_level + '-assoc.bin', 'w+b'))
+async def cg_run_confs(loop, confs):
+    tasks = set()
+    i = 0
+    while i < len(confs):
+        if len(tasks) >= N_THREADS:
+            _done, tasks = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+        tasks.add(loop.create_task(cg_run_conf(confs[i])))
+        i += 1
+    await asyncio.wait(tasks)
 
 
-async def cg_run_line(program, cache_level, params=[]):
-    params = [32, 64, 128, 256]  # ll line-sizes
-    runs = [await CGRunner('data/sample_programs/' + program,
-                     ['--{}=8388608,16,{}'.format(cache_level, str(param))]).run() for param in params]
-    pickle.dump(runs, open('out/' + program + '-' + cache_level + '-line.bin', 'w+b'))
+def cg(program):
+    confs = [
+        *[CGRunConf(program, d1=D1CacheConf(size=i)) for i in [8192, 16384, 32768, 65536, 131072, 262144]],
+        *[CGRunConf(program, d1=D1CacheConf(assoc=i)) for i in [2, 4, 8, 16, 32, 64]],
+        *[CGRunConf(program, d1=D1CacheConf(line_size=i)) for i in [32, 64, 128, 256]],
+        *[CGRunConf(program, ll=LLCacheConf(size=i)) for i in [2097152, 4194304, 8388608, 16777216, 33554432, 67108864]],
+        *[CGRunConf(program, ll=LLCacheConf(assoc=i)) for i in [2, 4, 8, 16, 32, 64]],
+        *[CGRunConf(program, ll=LLCacheConf(line_size=i)) for i in [32, 64, 128, 256]]
+    ]
 
-
-def cg(cache_level, program):
-    import time
     loop = asyncio.get_event_loop()
-    s = time.perf_counter()
-    loop.run_until_complete(asyncio.wait([
-        cg_run_size(program, cache_level), cg_run_assoc(program, cache_level), cg_run_line(program, cache_level)]))
-    elapsed = time.perf_counter() - s
-    print(f"executed in {elapsed:0.2f} seconds.")
+    loop.run_until_complete(
+        asyncio.wait([cg_run_confs(loop, confs)]))
     loop.close()
 
 
-def plot_d1(program):
+def plot_funcs_d1(program):
+    fig, axs = plt.subplots(1, 3, figsize=(12, 3))
+
+    # SIZE
+    size_ax = axs[0]
+    runs = pickle.load(open('out/' + program + '-D1-size.bin', 'rb'))
+    sizes = [str(int(int(r.get_specs()['D1']['size']) / 1024)) + 'KB' for r in runs]
+    thresholded_funcs = CGAnalyzer(runs[0]).get_thresholded_functions()
+    # for f in runs[0].files:
+    #     print(f.path)
+    for func in thresholded_funcs:
+        funcs = [f for r in runs for f in r.get_functions() if f.__str__() == func.__str__()]
+        miss_rates = [f.events.D1mr / f.events.Dr * 100 for f in funcs]
+        size_ax.plot(sizes, miss_rates, 's-', label=func.get_formatted_name())
+        if ceil(max(miss_rates)) != 0:
+            size_ax.set_ylim([0, ceil(max(miss_rates))])
+
+    size_ax.yaxis.set_major_formatter(ticker.PercentFormatter())
+    size_ax.set_ylabel('data read miss rate')
+    size_ax.set_title('size')
+    size_ax.legend()
+    size_ax.grid()
+
+    # ASSOC
+    assoc_ax = axs[1]
+    runs = pickle.load(open('out/' + program + '-D1-assoc.bin', 'rb'))
+    sizes = [r.get_specs()['D1']['assoc'] for r in runs]
+    thresholded_funcs = CGAnalyzer(runs[0]).get_thresholded_functions()
+    for func in thresholded_funcs:
+        funcs = [f for r in runs for f in r.get_functions() if f.__str__() == func.__str__()]
+        miss_rates = [f.events.D1mr / f.events.Dr * 100 for f in funcs]
+        assoc_ax.plot(sizes, miss_rates, 's-', label=func.get_formatted_name())
+        if ceil(max(miss_rates)) != 0:
+            assoc_ax.set_ylim([0, ceil(max(miss_rates))])
+
+    assoc_ax.yaxis.set_major_formatter(ticker.PercentFormatter())
+    assoc_ax.set_title('set-associativity')
+    assoc_ax.legend()
+    assoc_ax.grid()
+
+    # LINE
+    line_ax = axs[2]
+    runs = pickle.load(open('out/' + program + '-D1-line.bin', 'rb'))
+    sizes = [r.get_specs()['D1']['line_size'] + 'B' for r in runs]
+    thresholded_funcs = CGAnalyzer(runs[0]).get_thresholded_functions()
+    for func in thresholded_funcs:
+        funcs = [f for r in runs for f in r.get_functions() if f.__str__() == func.__str__()]
+        miss_rates = [f.events.D1mr / f.events.Dr * 100 for f in funcs]
+        line_ax.plot(sizes, miss_rates, 's-', label=func.get_formatted_name())
+        if ceil(max(miss_rates)) != 0:
+            line_ax.set_ylim([0, ceil(max(miss_rates))])
+
+    line_ax.yaxis.set_major_formatter(ticker.PercentFormatter())
+    line_ax.set_title('line size')
+    line_ax.legend()
+    line_ax.grid()
+
+    # plt.savefig(program + '_app_d1')
+    plt.show()
+
+
+def plot_app_d1(program):
     fig, axs = plt.subplots(1, 3, figsize=(12, 3))
 
     # SIZE
     runs = pickle.load(open('out/' + program + '-D1-size.bin', 'rb'))
-    sizes = [str(int(int(r.get_specs()['D1']['size']) / (1024))) + 'KB' for r in runs]
+    sizes = [str(int(int(r.get_specs()['D1']['size']) / 1024)) + 'KB' for r in runs]
     miss_rates = [r.summary.D1mr / r.summary.Dr * 100 for r in runs]
 
     size_ax = axs[0]
@@ -104,11 +169,11 @@ def plot_d1(program):
     line_ax.set_title('line size')
     line_ax.grid()
 
-    # plt.savefig(program + '_d1')
+    # plt.savefig(program + '_app_d1')
     plt.show()
 
 
-def plot_ll(program):
+def plot_app_ll(program):
     fig, axs = plt.subplots(1, 3, figsize=(12, 3))
 
     # SIZE
@@ -148,5 +213,5 @@ def plot_ll(program):
     line_ax.set_title('line size')
     line_ax.grid()
 
-    # plt.savefig(program + '_ll')
+    # plt.savefig(program + '_app_ll')
     plt.show()
