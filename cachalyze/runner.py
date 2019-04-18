@@ -6,13 +6,16 @@ import matplotlib.ticker as ticker
 
 from cachalyze.cganalyzer import CGAnalyzer
 # from cachalyze.cgparser import CGParser
-from cachalyze.cgrunner import CGRunner, CGRunConf, D1CacheConf, LLCacheConf
+from cachalyze.cgrunner import CGRunner, CGRunConf, CGD1CacheConf, CGLLCacheConf
+from cachalyze.cgstorage import CGStorage
 
 N_THREADS = 4
 
 
 def run():
     pass
+
+    print(CGStorage().get_for_d1_size('good_cacher'))
 
     # RUN AND SAVE CG
     # cg('good_cacher')
@@ -41,7 +44,7 @@ async def cg_run_conf(conf):
     await CGRunner(conf).run_async()
 
 
-async def cg_run_confs(loop, confs):
+async def cg_run_queue(loop, confs):
     tasks = set()
     i = 0
     while i < len(confs):
@@ -54,17 +57,17 @@ async def cg_run_confs(loop, confs):
 
 def cg(program):
     confs = [
-        *[CGRunConf(program, d1=D1CacheConf(size=i)) for i in [8192, 16384, 32768, 65536, 131072, 262144]],
-        *[CGRunConf(program, d1=D1CacheConf(assoc=i)) for i in [2, 4, 8, 16, 32, 64]],
-        *[CGRunConf(program, d1=D1CacheConf(line_size=i)) for i in [32, 64, 128, 256]],
-        *[CGRunConf(program, ll=LLCacheConf(size=i)) for i in [2097152, 4194304, 8388608, 16777216, 33554432, 67108864]],
-        *[CGRunConf(program, ll=LLCacheConf(assoc=i)) for i in [2, 4, 8, 16, 32, 64]],
-        *[CGRunConf(program, ll=LLCacheConf(line_size=i)) for i in [32, 64, 128, 256]]
+        *[CGRunConf(program, d1=CGD1CacheConf(size=i)) for i in [8192, 16384, 32768, 65536, 131072, 262144]],
+        *[CGRunConf(program, d1=CGD1CacheConf(assoc=i)) for i in [2, 4, 8, 16, 32, 64]],
+        *[CGRunConf(program, d1=CGD1CacheConf(line_size=i)) for i in [32, 64, 128, 256]],
+        *[CGRunConf(program, ll=CGLLCacheConf(size=i)) for i in [2097152, 4194304, 8388608, 16777216, 33554432, 67108864]],
+        *[CGRunConf(program, ll=CGLLCacheConf(assoc=i)) for i in [2, 4, 8, 16, 32, 64]],
+        *[CGRunConf(program, ll=CGLLCacheConf(line_size=i)) for i in [32, 64, 128, 256]]
     ]
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(
-        asyncio.wait([cg_run_confs(loop, confs)]))
+        asyncio.wait([cg_run_queue(loop, confs)]))
     loop.close()
 
 

@@ -14,16 +14,24 @@ class CGCacheConf:
         return f'{self.size},{self.assoc},{self.line_size}'
 
 
-class D1CacheConf(CGCacheConf):
-    def __init__(self, size=32768, assoc=8, line_size=64):
+class CGD1CacheConf(CGCacheConf):
+    DEFAULT_SIZE = 32768
+    DEFAULT_ASSOC = 8
+    DEFAULT_LINE_SIZE = 64
+
+    def __init__(self, size=DEFAULT_SIZE, assoc=DEFAULT_ASSOC, line_size=DEFAULT_LINE_SIZE):
         super().__init__(size, assoc, line_size)
 
     def get_cmd_option(self):
         return f'--D1={self.size},{self.assoc},{self.line_size}'
 
 
-class LLCacheConf(CGCacheConf):
-    def __init__(self, size=8388608, assoc=16, line_size=64):
+class CGLLCacheConf(CGCacheConf):
+    DEFAULT_SIZE = 8388608
+    DEFAULT_ASSOC = 16
+    DEFAULT_LINE_SIZE = 64
+
+    def __init__(self, size=DEFAULT_SIZE, assoc=DEFAULT_ASSOC, line_size=DEFAULT_LINE_SIZE):
         super().__init__(size, assoc, line_size)
 
     def get_cmd_option(self):
@@ -33,8 +41,8 @@ class LLCacheConf(CGCacheConf):
 class CGRunConf:
     def __init__(self, program, d1=None, ll=None):
         self.program = program
-        self.d1 = d1 or D1CacheConf()
-        self.ll = ll or LLCacheConf()
+        self.d1 = d1 or CGD1CacheConf()
+        self.ll = ll or CGLLCacheConf()
         self.output_file = f'out/cgrunner.out.{self.program}.{self.d1}.{self.ll}'
 
     def get_cmd(self):
