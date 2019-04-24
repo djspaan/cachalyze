@@ -63,12 +63,12 @@ class CGRunner:
         parser = CGParser(self.run_conf.output_file)
         return parser.parse()
 
-    async def run_async_command(self):
+    async def run_async_cmd(self):
         proc = await asyncio.create_subprocess_shell(
             self.run_conf.get_cmd(), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         await proc.communicate()
 
     async def run_async(self):
-        await self.run_async_command()
+        await self.run_async_cmd()
         parser = CGParser(self.run_conf.output_file)
         return parser.parse()
