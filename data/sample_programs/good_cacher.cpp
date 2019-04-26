@@ -2,23 +2,21 @@
 
 #define N 500
 
-void fill(int arr[N][N]) {
-    for (int i = 0; i < N; ++i) {
-        for (int j = 0; j < N; ++j) {
-            arr[i][j] = i+j+2;
+void fill(int arr[N][N][N]) {
+    for (int k = 0; k < N; ++k) {
+        for (int l = 0; l < N; ++l) {
+            for (int m = 0; m < N; ++m) {
+                arr[k][l][m] = k + l + m + 3;
+            }
         }
     }
 }
 
 int main() {
     long int res;
-
     auto arr = new int[N][N][N]();
 
-    for (int i = 0; i < N; ++i) {
-       fill(arr[i]);
-    }
-
+    fill(arr);
 
     for (int k = 0; k < N; ++k) {
         for (int l = 0; l < N; ++l) {
@@ -32,4 +30,3 @@ int main() {
 
     return 0;
 }
-

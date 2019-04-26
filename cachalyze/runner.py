@@ -11,13 +11,13 @@ N_THREADS = 4
 
 
 def run():
-    plot_app_ll('bad_cacher')
+    pass
 
     # RUN AND SAVE CG
     # cg('good_cacher')
 
     # PLOT D1 STATISTICS
-    # plot_app_d1('bad_cacher')
+    plot_app_ll('bad_cacher', read_misses_ll)
     # plot_funcs_d1('bad_cacher')
 
     # THRESHOLDED FUNCTIONS
@@ -68,7 +68,31 @@ def cg(program):
     loop.close()
 
 
-def plot_funcs_d1(program):
+def total_misses_d1(events):
+    return (events.D1mr + events.D1mw) / (events.Dr + events.Dw) * 100
+
+
+def read_misses_d1(events):
+    return events.D1mr / events.Dr * 100
+
+
+def write_misses_d1(events):
+    return events.D1mw / events.Dw * 100
+
+
+def total_misses_ll(events):
+    return (events.DLmr + events.DLmw) / (events.Dr + events.Dw) * 100
+
+
+def read_misses_ll(events):
+    return events.D1mr / events.Dr * 100
+
+
+def write_misses_ll(events):
+    return events.DLmw / events.Dw * 100
+
+
+def plot_funcs_d1(program, count_func):
     fig, axs = plt.subplots(1, 3, figsize=(12, 3))
 
     # SIZE
@@ -79,14 +103,14 @@ def plot_funcs_d1(program):
     max_miss_rates = []
     for func in thresholded_funcs:
         funcs = [f for r in runs for f in r.get_functions() if f.__str__() == func.__str__()]
-        miss_rates = [f.events.D1mr / f.events.Dr * 100 for f in funcs]
+        miss_rates = [count_func(f.events) for f in funcs]
         size_ax.plot(sizes, miss_rates, 's-', label=func.get_formatted_name())
         max_miss_rates.append(max(miss_rates))
     if ceil(max(max_miss_rates)) != 0:
         size_ax.set_ylim([0, ceil(max(max_miss_rates))])
 
     size_ax.yaxis.set_major_formatter(ticker.PercentFormatter())
-    size_ax.set_ylabel('data read miss rate')
+    size_ax.set_ylabel('D1 miss rate')
     size_ax.set_title('size')
     size_ax.legend()
     size_ax.grid()
@@ -99,7 +123,7 @@ def plot_funcs_d1(program):
     max_miss_rates = []
     for func in thresholded_funcs:
         funcs = [f for r in runs for f in r.get_functions() if f.__str__() == func.__str__()]
-        miss_rates = [f.events.D1mr / f.events.Dr * 100 for f in funcs]
+        miss_rates = [count_func(f.events) for f in funcs]
         assoc_ax.plot(sizes, miss_rates, 's-', label=func.get_formatted_name())
         max_miss_rates.append(max(miss_rates))
     if ceil(max(max_miss_rates)) != 0:
@@ -107,7 +131,6 @@ def plot_funcs_d1(program):
 
     assoc_ax.yaxis.set_major_formatter(ticker.PercentFormatter())
     assoc_ax.set_title('set-associativity')
-    assoc_ax.legend()
     assoc_ax.grid()
 
     # LINE
@@ -118,7 +141,7 @@ def plot_funcs_d1(program):
     max_miss_rates = []
     for func in thresholded_funcs:
         funcs = [f for r in runs for f in r.get_functions() if f.__str__() == func.__str__()]
-        miss_rates = [f.events.D1mr / f.events.Dr * 100 for f in funcs]
+        miss_rates = [count_func(f.events) for f in funcs]
         line_ax.plot(sizes, miss_rates, 's-', label=func.get_formatted_name())
         max_miss_rates.append(max(miss_rates))
     if ceil(max(max_miss_rates)) != 0:
@@ -126,14 +149,13 @@ def plot_funcs_d1(program):
 
     line_ax.yaxis.set_major_formatter(ticker.PercentFormatter())
     line_ax.set_title('line size')
-    line_ax.legend()
     line_ax.grid()
 
     # plt.savefig(program + '_app_d1')
     plt.show()
 
 
-def plot_funcs_ll(program):
+def plot_funcs_ll(program, count_func):
     fig, axs = plt.subplots(1, 3, figsize=(12, 3))
 
     # SIZE
@@ -144,14 +166,14 @@ def plot_funcs_ll(program):
     max_miss_rates = []
     for func in thresholded_funcs:
         funcs = [f for r in runs for f in r.get_functions() if f.__str__() == func.__str__()]
-        miss_rates = [f.events.DLmr / f.events.Dr * 100 for f in funcs]
+        miss_rates = [count_func(f.events) for f in funcs]
         size_ax.plot(sizes, miss_rates, 's-', label=func.get_formatted_name())
         max_miss_rates.append(max(miss_rates))
     if ceil(max(max_miss_rates)) != 0:
         size_ax.set_ylim([0, ceil(max(max_miss_rates))])
 
     size_ax.yaxis.set_major_formatter(ticker.PercentFormatter())
-    size_ax.set_ylabel('data read miss rate')
+    size_ax.set_ylabel('LL miss rate')
     size_ax.set_title('size')
     size_ax.legend()
     size_ax.grid()
@@ -164,7 +186,7 @@ def plot_funcs_ll(program):
     max_miss_rates = []
     for func in thresholded_funcs:
         funcs = [f for r in runs for f in r.get_functions() if f.__str__() == func.__str__()]
-        miss_rates = [f.events.DLmr / f.events.Dr * 100 for f in funcs]
+        miss_rates = [count_func(f.events) for f in funcs]
         assoc_ax.plot(sizes, miss_rates, 's-', label=func.get_formatted_name())
         max_miss_rates.append(max(miss_rates))
     if ceil(max(max_miss_rates)) != 0:
@@ -172,7 +194,6 @@ def plot_funcs_ll(program):
 
     assoc_ax.yaxis.set_major_formatter(ticker.PercentFormatter())
     assoc_ax.set_title('set-associativity')
-    assoc_ax.legend()
     assoc_ax.grid()
 
     # LINE
@@ -183,7 +204,7 @@ def plot_funcs_ll(program):
     max_miss_rates = []
     for func in thresholded_funcs:
         funcs = [f for r in runs for f in r.get_functions() if f.__str__() == func.__str__()]
-        miss_rates = [f.events.DLmr / f.events.Dr * 100 for f in funcs]
+        miss_rates = [count_func(f.events) for f in funcs]
         line_ax.plot(sizes, miss_rates, 's-', label=func.get_formatted_name())
         max_miss_rates.append(max(miss_rates))
     if ceil(max(max_miss_rates)) != 0:
@@ -191,33 +212,32 @@ def plot_funcs_ll(program):
 
     line_ax.yaxis.set_major_formatter(ticker.PercentFormatter())
     line_ax.set_title('line size')
-    line_ax.legend()
     line_ax.grid()
 
     # plt.savefig(program + '_app_d1')
     plt.show()
 
 
-def plot_app_d1(program):
+def plot_app_d1(program, count_func):
     fig, axs = plt.subplots(1, 3, figsize=(12, 3))
 
     # SIZE
     runs = CGStorage(program).get_for_param('D1', 'size')
     sizes = [str(int(int(r.get_specs()['D1']['size']) / 1024)) + 'KB' for r in runs]
-    miss_rates = [r.summary.D1mr / r.summary.Dr * 100 for r in runs]
+    miss_rates = [count_func(r.summary) for r in runs]
 
     size_ax = axs[0]
     size_ax.plot(sizes, miss_rates, 's-r')
     size_ax.set_ylim([0, ceil(max(miss_rates))])
     size_ax.yaxis.set_major_formatter(ticker.PercentFormatter())
-    size_ax.set_ylabel('data read miss rate')
+    size_ax.set_ylabel('D1 miss rate')
     size_ax.set_title('size')
     size_ax.grid()
 
     # ASSOC
     runs = CGStorage(program).get_for_param('D1', 'assoc')
     sizes = [r.get_specs()['D1']['assoc'] for r in runs]
-    miss_rates = [r.summary.D1mr / r.summary.Dr * 100 for r in runs]
+    miss_rates = [count_func(r.summary) for r in runs]
 
     assoc_ax = axs[1]
     assoc_ax.plot(sizes, miss_rates, 's-r')
@@ -229,7 +249,7 @@ def plot_app_d1(program):
     # LINE
     runs = CGStorage(program).get_for_param('D1', 'line_size')
     sizes = [r.get_specs()['D1']['line_size'] + 'B' for r in runs]
-    miss_rates = [r.summary.D1mr / r.summary.Dr * 100 for r in runs]
+    miss_rates = [count_func(r.summary) for r in runs]
 
     line_ax = axs[2]
     line_ax.plot(sizes, miss_rates, 's-r')
@@ -242,26 +262,26 @@ def plot_app_d1(program):
     plt.show()
 
 
-def plot_app_ll(program):
+def plot_app_ll(program, count_func):
     fig, axs = plt.subplots(1, 3, figsize=(12, 3))
 
     # SIZE
     runs = CGStorage(program).get_for_param('LL', 'size')
     sizes = [str(int(int(r.get_specs()['LL']['size']) / (1024 * 1024))) + 'MB' for r in runs]
-    miss_rates = [r.summary.DLmr / r.summary.Dr * 100 for r in runs]
+    miss_rates = [count_func(r.summary) for r in runs]
 
     size_ax = axs[0]
     size_ax.plot(sizes, miss_rates, 's-r')
     size_ax.set_ylim([0, ceil(max(miss_rates))])
     size_ax.yaxis.set_major_formatter(ticker.PercentFormatter())
-    size_ax.set_ylabel('data read miss rate')
+    size_ax.set_ylabel('LL miss rate')
     size_ax.set_title('size')
     size_ax.grid()
 
     # ASSOC
     runs = CGStorage(program).get_for_param('LL', 'assoc')
     sizes = [r.get_specs()['LL']['assoc'] for r in runs]
-    miss_rates = [r.summary.DLmr / r.summary.Dr * 100 for r in runs]
+    miss_rates = [count_func(r.summary) for r in runs]
 
     assoc_ax = axs[1]
     assoc_ax.plot(sizes, miss_rates, 's-r')
@@ -273,7 +293,7 @@ def plot_app_ll(program):
     # LINE
     runs = CGStorage(program).get_for_param('LL', 'line_size')
     sizes = [r.get_specs()['LL']['line_size'] + 'B' for r in runs]
-    miss_rates = [r.summary.DLmr / r.summary.Dr * 100 for r in runs]
+    miss_rates = [count_func(r.summary) for r in runs]
 
     line_ax = axs[2]
     line_ax.plot(sizes, miss_rates, 's-r')
