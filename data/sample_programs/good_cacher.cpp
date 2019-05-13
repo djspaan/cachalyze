@@ -1,28 +1,27 @@
 #include <iostream>
 
-#define N 500
+#define N 8192
 
-void fill(int arr[N][N][N]) {
-    for (int k = 0; k < N; ++k) {
-        for (int l = 0; l < N; ++l) {
-            for (int m = 0; m < N; ++m) {
-                arr[k][l][m] = k + l + m + 3;
-            }
+void fill(int **arr) {
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < N; ++j) {
+            arr[i][j] = 1;
         }
     }
 }
 
 int main() {
-    long int res;
-    auto arr = new int[N][N][N]();
+    int res;
+    int **arr = new int*[N];
+
+    for (int i = 0 ; i < N ; i++)
+        arr[i] = new int[N];
 
     fill(arr);
 
-    for (int k = 0; k < N; ++k) {
-        for (int l = 0; l < N; ++l) {
-            for (int m = 0; m < N; ++m) {
-                res += arr[k][l][m];
-            }
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < N; ++j) {
+            res += arr[i][j];
         }
     }
 
