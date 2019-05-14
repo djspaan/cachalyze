@@ -3,6 +3,13 @@ import os
 
 from cachalyze.cgparser import CGParser
 
+# PROGRAM_CMD = 'data/sample_programs/bad_cacher'
+# PROGRAM_CMD = 'timeout 5m /home/dennisspaan/Workspace/hub/build/local_subscriber/local_subscriber -s -c \
+#                     /home/dennisspaan/Workspace/hub/conf/local_subscriber.xml'
+PROGRAM_CMD = '/home/dennisspaan/Workspace/test/bld/app/test -s -c \
+              /home/dennisspaan/Workspace/test/bld/app/test.xml'
+PROGRAM_ALIAS = 'test'
+
 
 class CGCacheConf:
     def __init__(self, size, assoc, line_size):
@@ -39,18 +46,17 @@ class CGLLCacheConf(CGCacheConf):
 
 
 class CGRunConf:
-    def __init__(self, program, d1=None, ll=None):
-        self.program = program
+    def __init__(self, d1=None, ll=None):
         self.d1 = d1 or CGD1CacheConf()
         self.ll = ll or CGLLCacheConf()
-        self.output_file = f'out/cgrunner.out.{self.program}.{self.d1}.{self.ll}'
+        self.output_file = f'out/cgrunner.out.{PROGRAM_ALIAS}.{self.d1}.{self.ll}'
 
     def get_cmd(self):
         cmd = 'valgrind --tool=cachegrind '
         cmd += f'--cachegrind-out-file={self.output_file}'
         cmd += f' {self.d1.get_cmd_option()}'
         cmd += f' {self.ll.get_cmd_option()}'
-        cmd += f' data/sample_programs/{self.program}'
+        cmd += f' {PROGRAM_CMD}'
         return cmd
 
 
