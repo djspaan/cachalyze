@@ -1,5 +1,3 @@
-from itertools import groupby
-
 import numpy
 
 
@@ -8,6 +6,42 @@ class CGAnalyzer:
 
     def __init__(self, cgoutput):
         self.output = cgoutput
+
+    @staticmethod
+    def total_misses_d1(events):
+        if events.Dr + events.Dw == 0:
+            return 0
+        return (events.D1mr + events.D1mw) / (events.Dr + events.Dw) * 100
+
+    @staticmethod
+    def read_misses_d1(events):
+        if events.Dr == 0:
+            return 0
+        return events.D1mr / events.Dr * 100
+
+    @staticmethod
+    def write_misses_d1(events):
+        if events.Dw == 0:
+            return 0
+        return events.D1mw / events.Dw * 100
+
+    @staticmethod
+    def total_misses_ll(events):
+        if events.Dr + events.Dw == 0:
+            return 0
+        return (events.DLmr + events.DLmw) / (events.Dr + events.Dw) * 100
+
+    @staticmethod
+    def read_misses_ll(events):
+        if events.Dr == 0:
+            return 0
+        return events.DLmr / events.Dr * 100
+
+    @staticmethod
+    def write_misses_ll(events):
+        if events.Dw == 0:
+            return 0
+        return events.DLmw / events.Dw * 100
 
     def get_thresholded_functions(self):
         thresholded_functions = []
@@ -38,17 +72,24 @@ class CGGlobalAnalyzer:
             else:
                 grouped_functions[str(f)] = [f]
 
-        # TODO: sorteren op change_factor
+        results = {}
+
+        for f in grouped_functions.keys():
+            results[str(f)] = self._get_change_factor(grouped_functions[str(f)])
+
+        sorted_results = sorted(results.items(), reverse=True, key=lambda kv: kv[1])
+
+        a = 0
+        for k in sorted_results:
+            if a == 15:
+                break
+            print(f'{k}')
+            a += 1
 
         # functions.sort(key=lambda func: self._get_change_factor(func), reverse=True)
-        return functions
+        # return something
 
     def _get_change_factor(self, funcs):
-        funcs = list(map(lambda f: self.total_misses_d1(f.events), funcs))
+        funcs = list(map(lambda f: CGAnalyzer.total_misses_d1(f.events), funcs))
         diffs = numpy.diff(funcs)
         return sum([abs(d) for d in diffs])
-
-    def total_misses_d1(self, events):
-        if events.Dr + events.Dw == 0:
-            return 0
-        return (events.D1mr + events.D1mw) / (events.Dr + events.Dw) * 10

@@ -1,14 +1,8 @@
 import asyncio
 import os
 
+import cachalyze.config as config
 from cachalyze.cgparser import CGParser
-
-# PROGRAM_CMD = 'data/sample_programs/bad_cacher'
-# PROGRAM_CMD = 'timeout 5m /home/dennisspaan/Workspace/hub/build/local_subscriber/local_subscriber -s -c \
-#                     /home/dennisspaan/Workspace/hub/conf/local_subscriber.xml'
-PROGRAM_CMD = '/home/dennisspaan/Workspace/test/bld/app/test -s -c \
-              /home/dennisspaan/Workspace/test/bld/app/test.xml'
-PROGRAM_ALIAS = 'test'
 
 
 class CGCacheConf:
@@ -49,14 +43,14 @@ class CGRunConf:
     def __init__(self, d1=None, ll=None):
         self.d1 = d1 or CGD1CacheConf()
         self.ll = ll or CGLLCacheConf()
-        self.output_file = f'out/cgrunner.out.{PROGRAM_ALIAS}.{self.d1}.{self.ll}'
+        self.output_file = f'out/cgrunner.out.{config.PROGRAM_ALIAS}.{self.d1}.{self.ll}'
 
     def get_cmd(self):
         cmd = 'valgrind --tool=cachegrind '
         cmd += f'--cachegrind-out-file={self.output_file}'
         cmd += f' {self.d1.get_cmd_option()}'
         cmd += f' {self.ll.get_cmd_option()}'
-        cmd += f' {PROGRAM_CMD}'
+        cmd += f' {config.PROGRAM_CMD}'
         return cmd
 
 
@@ -76,5 +70,40 @@ class CGRunner:
 
     async def run_async(self):
         await self.run_async_cmd()
+        # TODO: parse separately
         parser = CGParser(self.run_conf.output_file)
         return parser.parse()
+
+
+class CGAsyncRunner:
+    @staticmethod
+    async def _run_conf(conf):
+        await CGRunner(conf).run_async()
+
+    @staticmethod
+    async def _run_queue(loop):
+        tasks = set()
+        i = 0
+        while i < len(RUN_CONFS):
+            if len(tasks) >= config.N_THREADS:
+                _done, tasks = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+            tasks.add(loop.create_task(CGAsyncRunner._run_conf(RUN_CONFS[i])))
+            i += 1
+        await asyncio.wait(tasks)
+
+    @staticmethod
+    def run():
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(
+            asyncio.wait([CGAsyncRunner._run_queue(loop)]))
+        loop.close()
+
+
+RUN_CONFS = [
+    *[CGRunConf(d1=CGD1CacheConf(size=i)) for i in config.D1_CACHE_SIZES],
+    *[CGRunConf(d1=CGD1CacheConf(assoc=i)) for i in config.D1_CACHE_ASSOCS],
+    *[CGRunConf(d1=CGD1CacheConf(line_size=i)) for i in config.D1_CACHE_LINE_SIZES],
+    *[CGRunConf(ll=CGLLCacheConf(size=i)) for i in config.D1_CACHE_SIZES],
+    *[CGRunConf(ll=CGLLCacheConf(assoc=i)) for i in config.D1_CACHE_ASSOCS],
+    *[CGRunConf(ll=CGLLCacheConf(line_size=i)) for i in config.D1_CACHE_LINE_SIZES]
+]
