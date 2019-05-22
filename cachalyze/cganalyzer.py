@@ -43,6 +43,13 @@ class CGAnalyzer:
             return 0
         return events.DLmw / events.Dw * 100
 
+    @staticmethod
+    def get_count_for_cache(cache, events):
+        if cache == 'D1':
+            return CGAnalyzer.total_misses_d1(events)
+        if cache == 'LL':
+            return CGAnalyzer.total_misses_ll(events)
+
     def get_thresholded_functions(self):
         thresholded_functions = []
         threshold = self.output.summary.Ir / 100 * self.THRESHOLD
