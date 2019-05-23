@@ -7,66 +7,6 @@ from cachalyze.cganalyzer import CGGlobalAnalyzer, CGAnalyzer
 from cachalyze.cgstorage import CGStorage
 
 
-class CGSingleFuncSizeSubplot:
-    def __init__(self, plot, axs, cache):
-        self.parent_plot = plot
-        self.axs = axs
-        self.cache = cache
-
-    def plot(self):
-        runs = CGStorage(config.PROGRAM_ALIAS).get_for_param(self.cache, 'size')
-        print(runs)
-        # TODO: FIX SIZES HERE FOR CACHE
-        sizes = [CGPlotter.convert_to_bit_str(s) for s in config.CACHE_PARAMS[self.cache]['SIZES']]
-        funcs = [f for r in runs for f in r.get_functions() if str(f) == str(self.parent_plot.func)]
-        miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
-        self.axs.plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name())
-        self.parent_plot.min_miss_rates.append(min(miss_rates))
-        self.parent_plot.max_miss_rates.append(max(miss_rates))
-        self.axs.yaxis.set_major_formatter(ticker.PercentFormatter())
-        self.axs.set_title('size')
-        self.axs.legend()
-        self.axs.grid()
-
-
-class CGSingleFuncAssocSubplot:
-    def __init__(self, plot, axs, cache):
-        self.parent_plot = plot
-        self.axs = axs
-        self.cache = cache
-
-    def plot(self):
-        runs = CGStorage(config.PROGRAM_ALIAS).get_for_param(self.cache, 'assoc')
-        sizes = [r.get_specs()[self.cache]['assoc'] for r in runs]
-        funcs = [f for r in runs for f in r.get_functions() if str(f) == str(self.parent_plot.func)]
-        miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
-        self.axs.plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name())
-        self.parent_plot.min_miss_rates.append(min(miss_rates))
-        self.parent_plot.max_miss_rates.append(max(miss_rates))
-        self.axs.yaxis.set_major_formatter(ticker.PercentFormatter())
-        self.axs.set_title('set-associativity')
-        self.axs.grid()
-
-
-class CGSingleFuncLineSizeSubplot:
-    def __init__(self, plot, axs, cache):
-        self.parent_plot = plot
-        self.axs = axs
-        self.cache = cache
-
-    def plot(self):
-        runs = CGStorage(config.PROGRAM_ALIAS).get_for_param(self.cache, 'line_size')
-        sizes = [r.get_specs()[self.cache]['line_size'] + 'B' for r in runs]
-        funcs = [f for r in runs for f in r.get_functions() if str(f) == str(self.parent_plot.func)]
-        miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
-        self.axs.plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name())
-        self.parent_plot.min_miss_rates.append(min(miss_rates))
-        self.parent_plot.max_miss_rates.append(max(miss_rates))
-        self.axs.yaxis.set_major_formatter(ticker.PercentFormatter())
-        self.axs.set_title('line size')
-        self.axs.grid()
-
-
 class CGPlot:
     def __init__(self, cache):
         self.cache = cache
@@ -89,37 +29,176 @@ class CGSingleFuncPlot(CGPlot):
         super().__init__(cache)
 
     def plot_subplots(self):
-        CGSingleFuncSizeSubplot(self, self.axs[0], self.cache).plot()
-        CGSingleFuncAssocSubplot(self, self.axs[1], self.cache).plot()
-        CGSingleFuncLineSizeSubplot(self, self.axs[2], self.cache).plot()
+        # SIZE
+        runs = CGStorage(config.PROGRAM_ALIAS).get_for_param(self.cache, 'size')
+        sizes = [CGPlotter.convert_to_bit_str(s) for s in config.CACHE_PARAMS[self.cache]['SIZES']]
+        funcs = [f for r in runs for f in r.get_functions() if str(f) == str(self.func)]
+        miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
+        self.axs[0].plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name())
+        self.min_miss_rates.append(min(miss_rates))
+        self.max_miss_rates.append(max(miss_rates))
+        self.axs[0].yaxis.set_major_formatter(ticker.PercentFormatter())
+        self.axs[0].set_title('size')
+        self.axs[0].legend()
+        self.axs[0].grid()
+
+        # ASSOC
+        runs = CGStorage(config.PROGRAM_ALIAS).get_for_param(self.cache, 'assoc')
+        sizes = [r.get_specs()[self.cache]['assoc'] for r in runs]
+        funcs = [f for r in runs for f in r.get_functions() if str(f) == str(self.func)]
+        miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
+        self.axs[1].plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name())
+        self.min_miss_rates.append(min(miss_rates))
+        self.max_miss_rates.append(max(miss_rates))
+        self.axs[1].yaxis.set_major_formatter(ticker.PercentFormatter())
+        self.axs[1].set_title('set-associativity')
+        self.axs[1].grid()
+
+        # LINE SIZE
+        runs = CGStorage(config.PROGRAM_ALIAS).get_for_param(self.cache, 'line_size')
+        sizes = [r.get_specs()[self.cache]['line_size'] + 'B' for r in runs]
+        funcs = [f for r in runs for f in r.get_functions() if str(f) == str(self.func)]
+        miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
+        self.axs[2].plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name())
+        self.min_miss_rates.append(min(miss_rates))
+        self.max_miss_rates.append(max(miss_rates))
+        self.axs[2].yaxis.set_major_formatter(ticker.PercentFormatter())
+        self.axs[2].set_title('line size')
+        self.axs[2].grid()
+
+        min_miss_rate = floor(min(self.min_miss_rates))
+        max_miss_rate = ceil(max(self.max_miss_rates))
+
+        self.axs[0].set_ylim([min_miss_rate, max_miss_rate])
+        self.axs[1].set_ylim([min_miss_rate, max_miss_rate])
+        self.axs[2].set_ylim([min_miss_rate, max_miss_rate])
+
+        self.axs[0].set_ylabel(f'{self.cache} r+w miss rate')
+
+
+class CGMultiFuncPlot(CGPlot):
+    def __init__(self, cache, funcs):
+        self.funcs = funcs
+        super().__init__(cache)
+
+    def plot_subplots(self):
+        # SIZE
+        runs = CGStorage(config.PROGRAM_ALIAS).get_for_param('D1', 'size')
+        sizes = [CGPlotter.convert_to_bit_str(s) for s in config.CACHE_PARAMS[self.cache]['SIZES']]
+        for func in self.funcs:
+            funcs = [f for r in runs for f in r.get_functions() if str(f) == str(func)]
+            miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
+            self.axs[0].plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name())
+            self.min_miss_rates.append(min(miss_rates))
+            self.max_miss_rates.append(max(miss_rates))
+
+        self.axs[0].yaxis.set_major_formatter(ticker.PercentFormatter())
+        self.axs[0].set_title('size')
+        self.axs[0].legend()
+        self.axs[0].grid()
+
+        # ASSOC
+        runs = CGStorage(config.PROGRAM_ALIAS).get_for_param('D1', 'assoc')
+        sizes = [r.get_specs()['D1']['assoc'] for r in runs]
+        for func in self.funcs:
+            funcs = [f for r in runs for f in r.get_functions() if str(f) == str(func)]
+            miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
+            self.axs[1].plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name())
+            self.min_miss_rates.append(min(miss_rates))
+            self.max_miss_rates.append(max(miss_rates))
+
+        self.axs[1].yaxis.set_major_formatter(ticker.PercentFormatter())
+        self.axs[1].set_title('set-associativity')
+        self.axs[1].grid()
+
+        # LINE
+        runs = CGStorage(config.PROGRAM_ALIAS).get_for_param('D1', 'line_size')
+        sizes = [r.get_specs()['D1']['line_size'] + 'B' for r in runs]
+        for func in self.funcs:
+            funcs = [f for r in runs for f in r.get_functions() if str(f) == str(func)]
+            miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
+            self.axs[2].plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name())
+            self.min_miss_rates.append(min(miss_rates))
+            self.max_miss_rates.append(max(miss_rates))
+
+        self.axs[2].yaxis.set_major_formatter(ticker.PercentFormatter())
+        self.axs[2].set_title('line size')
+        self.axs[2].grid()
+
         min_miss_rate = floor(min(self.min_miss_rates))
         max_miss_rate = ceil(max(self.max_miss_rates))
         self.axs[0].set_ylim([min_miss_rate, max_miss_rate])
         self.axs[1].set_ylim([min_miss_rate, max_miss_rate])
         self.axs[2].set_ylim([min_miss_rate, max_miss_rate])
-        self.axs[0].set_ylabel(f'{self.cache} r+w miss rate')
+
+        self.axs[0].set_ylabel('D1 r+w miss rate')
 
 
-class CGMultiFuncPlot:
-    def plot(self):
-        pass
+class CGGlobalPlot(CGPlot):
+    def plot_subplots(self):
+        # SIZE
+        runs = CGStorage(config.PROGRAM_ALIAS).get_for_param('D1', 'size')
+        sizes = [CGPlotter.convert_to_bit_str(s) for s in config.CACHE_PARAMS[self.cache]['SIZES']]
+        miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, r.summary) for r in runs]
+        self.min_miss_rates.append(min(miss_rates))
+        self.max_miss_rates.append(max(miss_rates))
 
+        self.axs[0].plot(sizes, miss_rates, 's-r')
+        self.axs[0].yaxis.set_major_formatter(ticker.PercentFormatter())
+        self.axs[0].set_title('size')
+        self.axs[0].grid()
 
-class CGGlobalPlot:
-    def plot(self):
-        pass
+        # ASSOC
+        runs = CGStorage(config.PROGRAM_ALIAS).get_for_param('D1', 'assoc')
+        sizes = [r.get_specs()['D1']['assoc'] for r in runs]
+        miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, r.summary) for r in runs]
+        self.min_miss_rates.append(min(miss_rates))
+        self.max_miss_rates.append(max(miss_rates))
+
+        self.axs[1].plot(sizes, miss_rates, 's-r')
+        self.axs[1].yaxis.set_major_formatter(ticker.PercentFormatter())
+        self.axs[1].set_title('set-associativity')
+        self.axs[1].grid()
+
+        # LINE
+        runs = CGStorage(config.PROGRAM_ALIAS).get_for_param('D1', 'line_size')
+        sizes = [r.get_specs()['D1']['line_size'] + 'B' for r in runs]
+        miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, r.summary) for r in runs]
+        self.min_miss_rates.append(min(miss_rates))
+        self.max_miss_rates.append(max(miss_rates))
+
+        self.axs[2].plot(sizes, miss_rates, 's-r')
+        self.axs[2].yaxis.set_major_formatter(ticker.PercentFormatter())
+        self.axs[2].set_title('line size')
+        self.axs[2].grid()
+
+        min_miss_rate = floor(min(self.min_miss_rates))
+        max_miss_rate = ceil(max(self.max_miss_rates))
+        self.axs[0].set_ylim([min_miss_rate, max_miss_rate])
+        self.axs[1].set_ylim([min_miss_rate, max_miss_rate])
+        self.axs[2].set_ylim([min_miss_rate, max_miss_rate])
+
+        self.axs[0].set_ylabel('D1 r+w miss rate')
 
 
 class CGPlotter:
     @staticmethod
     def convert_to_bit_str(num_bits):
-        if num_bits < 1024:
+        if num_bits < (1024 * 1024):
             return str(int(num_bits / 1024)) + 'KB'
         return str(int(num_bits / (1024 * 1024))) + 'MB'
 
     @staticmethod
     def plot_single_func(cache, func):
         CGSingleFuncPlot(cache, func).plot()
+
+    @staticmethod
+    def plot_funcs(cache, funcs):
+        CGMultiFuncPlot(cache, funcs).plot()
+
+    @staticmethod
+    def plot_global(cache):
+        CGGlobalPlot(cache).plot()
 
     def plot_func_d1(self, func, count_func):
         fig, axs = plt.subplots(1, 3, figsize=(12, 3))

@@ -1,7 +1,7 @@
-PROGRAM_ALIAS = 'good_cacher'
+PROGRAM_ALIAS = 'test'
 PROGRAM_CMD = '/home/dennisspaan/Workspace/test/bld/app/test -s -c \
               /home/dennisspaan/Workspace/test/bld/app/test.xml'
-N_THREADS = 4
+N_THREADS = 8
 MAX_PLOTTED_FUNCS = 5
 
 CACHE_PARAMS = {

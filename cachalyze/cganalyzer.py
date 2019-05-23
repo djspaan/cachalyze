@@ -4,8 +4,8 @@ import numpy
 class CGAnalyzer:
     THRESHOLD = 99
 
-    def __init__(self, cgoutput):
-        self.output = cgoutput
+    def __init__(self, output):
+        self.output = output
 
     @staticmethod
     def total_misses_d1(events):
@@ -88,6 +88,8 @@ class CGGlobalAnalyzer:
 
         a = 0
         for k in sorted_results:
+            if k[0].startswith('?'):
+                continue
             if a == 15:
                 break
             print(f'{k}')

@@ -1,12 +1,17 @@
-from cachalyze.cganalyzer import CGAnalyzer
-from cachalyze.cgplotter import CGSingleFuncPlot, CGPlotter
+from cachalyze import config
+from cachalyze.cgplotter import CGPlotter
 from cachalyze.cgrunner import CGAsyncRunner
+from cachalyze.cgstorage import CGStorage
 
 
 def run():
     pass
 
-    # CGSingleFuncPlot('D1', '/home/dennisspaan/Workspace/test/x_common_libs/libs/platform/../logging/logger.h:Optiver::Common::Internal::Logger::Get()').plot()
+    # CGPlotter.plot_single_func('LL', '/home/dennisspaan/Workspace/test/x_common_libs/libs/common/../common
+    # /timing.h:Optiver::TimeSpan::GetNanosecondsDouble() const') CGPlotter.plot_funcs('D1',
+    # ['/home/dennisspaan/Workspace/test/x_common_libs/libs/common/../common/timing.h:Optiver::TimeSpan
+    # ::GetNanosecondsDouble() const', '/home/dennisspaan/Workspace/test/x_common_libs/libs/common/../common
+    # /timing.h:Optiver::TimeSpan::GetNanosecondsDouble() const']) CGPlotter.plot_global('LL')
 
     # SINGLE RUN WITH DEFAULT CONFIG
     # runner = CGRunner(CGRunConf())
@@ -23,15 +28,22 @@ def run():
     # plot_func_ll('test',
     #              '/home/dennisspaan/Workspace/test/x_common_libs/libs/platform/../logging/logger.h:Optiver::Common::Internal::Logger::Get()',
     #              CGAnalyzer.total_misses_ll)
-    CGPlotter().plot_app_d1(CGAnalyzer.total_misses_d1)
-    CGPlotter().plot_app_ll(CGAnalyzer.total_misses_ll)
+    # CGPlotter().plot_app_d1(CGAnalyzer.total_misses_d1)
+    # CGPlotter().plot_app_ll(CGAnalyzer.total_misses_ll)
     # plot_funcs_d1('test', CGAnalyzer.total_misses_d1)
     # plot_funcs_ll('test', CGAnalyzer.total_misses_ll)
 
     # PRINT THRESHOLDED FUNCTIONS
     # output = CGParser('out/cgrunner.out.local_subscriber.32768,8,64.8388608,16,64').parse()
-    # analyse = CGAnalyzer(output)
-    # for func in analyse.get_thresholded_functions():
+    # analyser = CGAnalyzer(output)
+    # for func in analyser.get_thresholded_functions():
+    #     print('{} {}'.format(func.events, func))
+
+    # PRINT MOST CHANGING FUNCTIONS
+    # outputs = CGStorage(config.PROGRAM_ALIAS).get_for_param('D1', 'size')
+    # analyser = CGGlobalAnalyzer(outputs)
+    # analyser.get_functions_by_change()
+    # for func in analyser.get_thresholded_functions():
     #     print('{} {}'.format(func.events, func))
 
     # PRINT LINES WITH EVENTS
