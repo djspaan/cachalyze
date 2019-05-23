@@ -18,14 +18,8 @@ class CGSingleFuncSizeSubplot:
         print(runs)
         # TODO: FIX SIZES HERE FOR CACHE
         sizes = [CGPlotter.convert_to_bit_str(s) for s in config.CACHE_PARAMS[self.cache]['SIZES']]
-        print(str(self.parent_plot.func))
         funcs = [f for r in runs for f in r.get_functions() if str(f) == str(self.parent_plot.func)]
-        print(len(runs))
-        print(len(sizes))
-        print(funcs)
         miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
-        print(miss_rates)
-        quit()
         self.axs.plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name())
         self.parent_plot.min_miss_rates.append(min(miss_rates))
         self.parent_plot.max_miss_rates.append(max(miss_rates))
@@ -480,7 +474,7 @@ class CGPlotter:
         line_ax.set_ylim([min_miss_rate, max_miss_rate])
 
         plt.tight_layout()
-        plt.savefig('out/' + program + '_app_ll')
+        # plt.savefig('out/' + program + '_app_ll')
         plt.show()
 
     def plot_test(program, count_func):

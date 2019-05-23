@@ -13,18 +13,18 @@ def run():
     # print(runner.run())
 
     # RUN AND SAVE CG OUTPUT
-    CGAsyncRunner.run()
+    # CGAsyncRunner.run()
 
     # PLOT STATISTICS
-    # CGPlotter().plot_func_ll(
+    # CGPlotter().plot_func_d1(
     #     '/home/dennisspaan/Workspace/test/x_common_libs/libs/platform/../logging/logger.h:Optiver::Common'
     #     '::Internal::Logger::Get()',
-    #     CGAnalyzer.total_misses_ll)
+    #     CGAnalyzer.total_misses_d1)
     # plot_func_ll('test',
     #              '/home/dennisspaan/Workspace/test/x_common_libs/libs/platform/../logging/logger.h:Optiver::Common::Internal::Logger::Get()',
     #              CGAnalyzer.total_misses_ll)
-    # CGPlotter().plot_app_d1(CGAnalyzer.total_misses_d1)
-    # plot_app_ll('ls', CGAnalyzer.total_misses_ll)
+    CGPlotter().plot_app_d1(CGAnalyzer.total_misses_d1)
+    CGPlotter().plot_app_ll(CGAnalyzer.total_misses_ll)
     # plot_funcs_d1('test', CGAnalyzer.total_misses_d1)
     # plot_funcs_ll('test', CGAnalyzer.total_misses_ll)
 
