@@ -1,8 +1,12 @@
 PROGRAM_ALIAS = 'test'
 PROGRAM_CMD = '/home/dennisspaan/Workspace/test/bld/app/test -s -c \
               /home/dennisspaan/Workspace/test/bld/app/test.xml'
-N_THREADS = 8
+N_THREADS = 32
 MAX_PLOTTED_FUNCS = 5
+
+# ANALYZE
+THRESHOLD = 20
+INCLUDE_STANDARD_METHODS = False
 
 CACHE_PARAMS = {
     'D1': {
@@ -16,6 +20,10 @@ CACHE_PARAMS = {
         'LINE_SIZES': [32, 64, 128, 256]
     }
 }
+
+# STORAGE
+OUT_DIR = 'out'
+OUT_PREFIX = 'cgrunner.out'
 
 # CACHEGRIND RUN CONFIG
 # PROGRAM_CMD = 'data/sample_programs/bad_cacher'

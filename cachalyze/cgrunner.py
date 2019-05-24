@@ -46,8 +46,8 @@ class CGRunConf:
         self.output_file = f'out/cgrunner.out.{config.PROGRAM_ALIAS}.{self.d1}.{self.ll}'
 
     def get_cmd(self):
-        cmd = 'valgrind --tool=cachegrind '
-        cmd += f'--cachegrind-out-file={self.output_file}'
+        cmd = 'valgrind --tool=callgrind --cache-sim=yes --compress-strings=no --compress-pos=no '
+        cmd += f'--callgrind-out-file={self.output_file}'
         cmd += f' {self.d1.get_cmd_option()}'
         cmd += f' {self.ll.get_cmd_option()}'
         cmd += f' {config.PROGRAM_CMD}'

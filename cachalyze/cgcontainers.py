@@ -3,6 +3,7 @@ import re
 
 class CGOutput:
     def __init__(self):
+        self.objects = []
         self.files = []
         self.description = []
         self.cmd = ''
@@ -46,11 +47,15 @@ class CGOutput:
         for file in self.files:
             for function in file.functions.values():
                 function_counts.add(function.events)
-                for line in function.lines.values():
-                    line_counts.add(line.events)
 
-        if not self.summary == function_counts == line_counts:
+        if not self.summary == function_counts:
             raise Exception('Summarized counts not equal to parsed counts.')
+
+
+class CGObject:
+    def __init__(self, name):
+        self.name = name
+        self.files = []
 
 
 class CGFile:
@@ -122,22 +127,21 @@ class CGLine:
         self.number = number
         self.events = CGEvents(*args)
 
+    def add_counts(self, *args):
+        self.events.add(CGEvents(*args))
+
 
 class CGEvents:
-    def __init__(self, Ir=0, I1mr=0, ILmr=0, Dr=0, D1mr=0, DLmr=0, Dw=0, D1mw=0, DLmw=0):
+    def __init__(self, Ir=0, Dr=0, Dw=0, I1mr=0, D1mr=0, D1mw=0, ILmr=0, DLmr=0, DLmw=0):
         self.Ir = Ir
-        self.I1mr = I1mr
-        self.ILmr = ILmr
         self.Dr = Dr
-        self.D1mr = D1mr
-        self.DLmr = DLmr
         self.Dw = Dw
+        self.I1mr = I1mr
+        self.D1mr = D1mr
         self.D1mw = D1mw
+        self.ILmr = ILmr
+        self.DLmr = DLmr
         self.DLmw = DLmw
-
-    @staticmethod
-    def print_events():
-        print('Ir I1mr ILmr Dr D1mr DLmr Dw D1mw DLmw')
 
     def add(self, events):
         for event in self.__dict__.keys():
@@ -145,12 +149,12 @@ class CGEvents:
 
     def format(self, width=10):
         return '{:{width}} {:{width}} {:{width}} {:{width}} {:{width}} {:{width}} {:{width}} {:{width}} {:{width}}' \
-            .format(self.Ir, self.I1mr, self.ILmr, self.Dr, self.D1mr, self.DLmr, self.Dw, self.D1mw, self.DLmw,
+            .format(self.Ir, self.Dr, self.Dw, self.I1mr, self.D1mr, self.D1mw, self.ILmr, self.DLmr, self.DLmw,
                     width=width, grouping=True)
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
     def __str__(self):
-        return f'{self.Ir:,}  {self.I1mr:,}  {self.ILmr:,}  {self.Dr:,} \
-         {self.D1mr:,}  {self.DLmr:,}  {self.Dw:,}  {self.D1mw:,}  {self.DLmw:,}'
+        return f'{self.Ir:,}  {self.Dr:,}  {self.Dw:,}  {self.I1mr:,} \
+         {self.D1mr:,}  {self.D1mw:,}  {self.ILmr:,}  {self.DLmr:,}  {self.DLmw:,}'

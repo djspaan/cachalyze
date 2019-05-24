@@ -1,9 +1,9 @@
 import numpy
 
+from cachalyze import config
+
 
 class CGAnalyzer:
-    THRESHOLD = 99
-
     def __init__(self, output):
         self.output = output
 
@@ -52,7 +52,7 @@ class CGAnalyzer:
 
     def get_thresholded_functions(self):
         thresholded_functions = []
-        threshold = self.output.summary.Ir / 100 * self.THRESHOLD
+        threshold = self.output.summary.Ir / 100 * config.THRESHOLD
 
         # TODO: Make event variable to sort by configurable
         functions = self.output.get_functions()
@@ -69,11 +69,17 @@ class CGGlobalAnalyzer:
     def __init__(self, outputs):
         self.outputs = outputs
 
-    def get_functions_by_change(self):
+    def get_functions_by_change(self, pre_def_funcs=[]):
         functions = [f for output in self.outputs for f in output.get_functions()]
         grouped_functions = {}
 
         for f in functions:
+            if pre_def_funcs:
+                if f not in pre_def_funcs:
+                    continue
+            if not config.INCLUDE_STANDARD_METHODS:
+                if str(f).startswith('???'):
+                    continue
             if str(f) in grouped_functions:
                 grouped_functions[str(f)].append(f)
             else:
@@ -86,17 +92,7 @@ class CGGlobalAnalyzer:
 
         sorted_results = sorted(results.items(), reverse=True, key=lambda kv: kv[1])
 
-        a = 0
-        for k in sorted_results:
-            if k[0].startswith('?'):
-                continue
-            if a == 15:
-                break
-            print(f'{k}')
-            a += 1
-
-        # functions.sort(key=lambda func: self._get_change_factor(func), reverse=True)
-        # return something
+        return [r[0] for r in sorted_results]
 
     def _get_change_factor(self, funcs):
         funcs = list(map(lambda f: CGAnalyzer.total_misses_d1(f.events), funcs))
