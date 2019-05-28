@@ -16,7 +16,7 @@ class CGOutput:
         for desc in self.description:
             m = re.match(r'^(I1|D1|LL) cache:[ ]+(\d+) B, (\d+) B, (\d+).+$', desc)
             if m:
-                specs[m[1]] = {'size': m[2], 'line_size': m[3], 'assoc': m[4]}
+                specs[m[1]] = {'SIZE': m[2], 'LINE_SIZE': m[3], 'ASSOC': m[4]}
         return specs
 
     def get_functions(self):
@@ -43,7 +43,6 @@ class CGOutput:
 
     def verify_count(self):
         function_counts = CGEvents()
-        line_counts = CGEvents()
         for file in self.files:
             for function in file.functions.values():
                 function_counts.add(function.events)

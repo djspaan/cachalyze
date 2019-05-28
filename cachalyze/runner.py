@@ -11,13 +11,21 @@ from cachalyze.cgstorage import CGStorage
 def run():
     pass
 
+    # CGPlotter.plot_global('D1')
+
+    # outputs = CGStorage().get_for_program()
+    # analyser = CGGlobalAnalyzer(outputs)
+    # funcs = analyser.get_functions_by_change()[:5]
+    # CGPlotter.plot_funcs('D1', funcs)
+
+    # CGPlotter.plot_func('D1', '/home/dennisspaan/Workspace/test/x_pg_client/libs/pg_client/pg_query.h:Optiver::PgClient::PgQuery<0ul>::GetForceBinaryResults() const')
+
     # PRINT THRESHOLDED FUNCTIONS
     # output = CGParser('/home/dennisspaan/Workspace/cachalyze/out/cgrunner.out.test.32768,8,64.8388608,16,64').parse()
     # funcs = CGAnalyzer(output).get_thresholded_functions()
     # print(output.summary)
     # for f in funcs:
     #     print(f)
-
 
     # CGPlotter.plot_single_func('LL', '/home/dennisspaan/Workspace/test/x_common_libs/libs/common/../common
     # /timing.h:Optiver::TimeSpan::GetNanosecondsDouble() const') CGPlotter.plot_funcs('D1',
@@ -30,20 +38,21 @@ def run():
     # print(runner.run())
 
     # RUN AND SAVE CG OUTPUT
-    CGAsyncRunner.run()
+    # CGAsyncRunner.run()
 
     # PLOT STATISTICS
-    # CGPlotter().plot_func_d1(
-    #     '/home/dennisspaan/Workspace/test/x_common_libs/libs/platform/../logging/logger.h:Optiver::Common'
-    #     '::Internal::Logger::Get()',
-    #     CGAnalyzer.total_misses_d1)
-    # plot_func_ll('test',
-    #              '/home/dennisspaan/Workspace/test/x_common_libs/libs/platform/../logging/logger.h:Optiver::Common::Internal::Logger::Get()',
-    #              CGAnalyzer.total_misses_ll)
-    # CGPlotter().plot_app_d1(CGAnalyzer.total_misses_d1)
-    # CGPlotter().plot_app_ll(CGAnalyzer.total_misses_ll)
-    # plot_funcs_d1('test', CGAnalyzer.total_misses_d1)
-    # plot_funcs_ll('test', CGAnalyzer.total_misses_ll)
+    # CGPlotter.plot_func('D1',
+    #                     '/home/dennisspaan/Workspace/test/x_common_libs/libs/platform/../logging/logger.h'
+    #                     ':Optiver::Common '
+    #                     '::Internal::Logger::Get()')
+    # CGPlotter.plot_func('LL',
+    #                     '/home/dennisspaan/Workspace/test/x_common_libs/libs/platform/../logging/logger.h'
+    #                     ':Optiver::Common '
+    #                     '::Internal::Logger::Get()')
+    # CGPlotter.plot_global('D1')
+    # CGPlotter.plot_global('LL')
+    # plot_funcs('D1', [])
+    # plot_funcs('LL', [])
 
     # PRINT THRESHOLDED FUNCTIONS
     # output = CGParser('out/cgrunner.out.local_subscriber.32768,8,64.8388608,16,64').parse()
@@ -59,25 +68,18 @@ def run():
     #     print(f)
     # CGPlotter.plot_funcs('D1', funcs)
 
-    # PRINT FUNCTIONS WITH MOST INSTRUCTIONS
-    # outputs = CGStorage().get_for_program()
-    # analyser = CGGlobalAnalyzer(outputs)
-    # output = outputs[4]
-    # funcs = output.get_functions()
-    # sor_funcs = sorted(funcs, reverse=True, key=lambda f: f.events.Ir)
-    # ch_funcs = analyser.get_functions_by_change(sor_funcs[:1000])
-    #
-    # CGPlotter.plot_funcs('D1', ch_funcs[:5])
-    # for f in sor_funcs:
-    #     if re.match('^/home/dennisspaan/Workspace/test/lib', str(f)):
-    #         print(f'{f.events.Ir} {f}')
+    # PRINT MOST CHANGING FUNCTIONS WITH MOST INSTRUCTIONS
+    outputs = CGStorage().get_for_program()
+    analyser = CGGlobalAnalyzer(outputs)
+    thres_funcs = analyser.get_thresholded_functions()
+    ch_funcs = analyser.get_functions_by_change('D1', thres_funcs)
 
-    # analyser = CGGlobalAnalyzer(outputs)
-    # funcs = analyser.get_functions_by_change()[:5]
-    # CGPlotter.plot_funcs('D1', funcs)
+    for f in ch_funcs:
+        print(f'{f}')
 
-    # for func in analyser.get_thresholded_functions():
-    #     print('{} {}'.format(func.events, func))
+    CGPlotter.plot_funcs('D1', ch_funcs[:5])
+
+    # CGStorage().get_for_param('D1', 'SIZE')
 
     # PRINT LINES WITH EVENTS
     # print(file.path)

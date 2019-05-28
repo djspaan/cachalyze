@@ -100,10 +100,10 @@ class CGAsyncRunner:
 
 
 RUN_CONFS = [
-    *[CGRunConf(d1=CGD1CacheConf(size=i)) for i in config.CACHE_PARAMS['D1']['SIZES']],
-    *[CGRunConf(d1=CGD1CacheConf(assoc=i)) for i in config.CACHE_PARAMS['D1']['ASSOCS']],
-    *[CGRunConf(d1=CGD1CacheConf(line_size=i)) for i in config.CACHE_PARAMS['D1']['LINE_SIZES']],
-    *[CGRunConf(ll=CGLLCacheConf(size=i)) for i in config.CACHE_PARAMS['LL']['SIZES']],
-    *[CGRunConf(ll=CGLLCacheConf(assoc=i)) for i in config.CACHE_PARAMS['LL']['ASSOCS']],
-    *[CGRunConf(ll=CGLLCacheConf(line_size=i)) for i in config.CACHE_PARAMS['LL']['LINE_SIZES']]
+    *[CGRunConf(d1=CGD1CacheConf(size=i)) for i in config.CACHE_PARAMS['D1']['SIZE']],
+    *[CGRunConf(d1=CGD1CacheConf(assoc=i)) for i in config.CACHE_PARAMS['D1']['ASSOC']],
+    *[CGRunConf(d1=CGD1CacheConf(line_size=i)) for i in config.CACHE_PARAMS['D1']['LINE_SIZE']],
+    *[CGRunConf(ll=CGLLCacheConf(size=i)) for i in config.CACHE_PARAMS['LL']['SIZE']],
+    *[CGRunConf(ll=CGLLCacheConf(assoc=i)) for i in config.CACHE_PARAMS['LL']['ASSOC']],
+    *[CGRunConf(ll=CGLLCacheConf(line_size=i)) for i in config.CACHE_PARAMS['LL']['LINE_SIZE']]
 ]

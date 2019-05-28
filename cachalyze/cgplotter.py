@@ -1,3 +1,4 @@
+import os
 from math import ceil, floor
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -8,6 +9,8 @@ from cachalyze.cgstorage import CGStorage
 
 
 class CGPlot:
+    TYPE = 'undefined'
+
     def __init__(self, cache):
         self.cache = cache
         self.min_miss_rates = self.max_miss_rates = []
@@ -16,7 +19,10 @@ class CGPlot:
     def plot(self):
         self.plot_subplots()
         plt.tight_layout()
-        # plt.savefig(program + '_funcs_d1')
+        if config.SAVE_FIGURE:
+            file_name = f'{config.OUT_DIR}/{config.PROGRAM_ALIAS}_{self.TYPE}_{self.cache}'
+            if not os.path.isfile(file_name):
+                plt.savefig(file_name)
         plt.show()
 
     def plot_subplots(self):
@@ -24,14 +30,16 @@ class CGPlot:
 
 
 class CGSingleFuncPlot(CGPlot):
+    TYPE = 'single_func'
+
     def __init__(self, cache, func):
         self.func = func
         super().__init__(cache)
 
     def plot_subplots(self):
         # SIZE
-        runs = CGStorage().get_for_param(self.cache, 'size')
-        sizes = [CGPlotter.convert_to_bit_str(s) for s in config.CACHE_PARAMS[self.cache]['SIZES']]
+        runs = CGStorage().get_for_param(self.cache, 'SIZE')
+        sizes = [CGPlotter.convert_to_bit_str(s) for s in config.CACHE_PARAMS[self.cache]['SIZE']]
         funcs = [f for r in runs for f in r.get_functions() if str(f) == str(self.func)]
         miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
         self.axs[0].plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name())
@@ -43,8 +51,8 @@ class CGSingleFuncPlot(CGPlot):
         self.axs[0].grid()
 
         # ASSOC
-        runs = CGStorage().get_for_param(self.cache, 'assoc')
-        sizes = [r.get_specs()[self.cache]['assoc'] for r in runs]
+        runs = CGStorage().get_for_param(self.cache, 'ASSOC')
+        sizes = [r.get_specs()[self.cache]['ASSOC'] for r in runs]
         funcs = [f for r in runs for f in r.get_functions() if str(f) == str(self.func)]
         miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
         self.axs[1].plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name())
@@ -55,8 +63,8 @@ class CGSingleFuncPlot(CGPlot):
         self.axs[1].grid()
 
         # LINE SIZE
-        runs = CGStorage().get_for_param(self.cache, 'line_size')
-        sizes = [r.get_specs()[self.cache]['line_size'] + 'B' for r in runs]
+        runs = CGStorage().get_for_param(self.cache, 'LINE_SIZE')
+        sizes = [r.get_specs()[self.cache]['LINE_SIZE'] + 'B' for r in runs]
         funcs = [f for r in runs for f in r.get_functions() if str(f) == str(self.func)]
         miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
         self.axs[2].plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name())
@@ -65,10 +73,9 @@ class CGSingleFuncPlot(CGPlot):
         self.axs[2].yaxis.set_major_formatter(ticker.PercentFormatter())
         self.axs[2].set_title('line size')
         self.axs[2].grid()
-        self.axs[2].legend()
 
         min_miss_rate = floor(min(self.min_miss_rates))
-        max_miss_rate = ceil(max(self.max_miss_rates))
+        max_miss_rate = max(self.max_miss_rates)
 
         self.axs[0].set_ylim([min_miss_rate, max_miss_rate])
         self.axs[1].set_ylim([min_miss_rate, max_miss_rate])
@@ -78,14 +85,16 @@ class CGSingleFuncPlot(CGPlot):
 
 
 class CGMultiFuncPlot(CGPlot):
+    TYPE = 'multiple_funcs'
+
     def __init__(self, cache, funcs):
         self.funcs = funcs
         super().__init__(cache)
 
     def plot_subplots(self):
         # SIZE
-        runs = CGStorage().get_for_param(self.cache, 'size')
-        sizes = [CGPlotter.convert_to_bit_str(s) for s in config.CACHE_PARAMS[self.cache]['SIZES']]
+        runs = CGStorage().get_for_param(self.cache, 'SIZE')
+        sizes = [CGPlotter.convert_to_bit_str(s) for s in config.CACHE_PARAMS[self.cache]['SIZE']]
         for func in self.funcs:
             funcs = [f for r in runs for f in r.get_functions() if str(f) == str(func)]
             miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
@@ -96,14 +105,14 @@ class CGMultiFuncPlot(CGPlot):
         self.axs[0].yaxis.set_major_formatter(ticker.PercentFormatter())
         self.axs[0].set_title('size')
         self.axs[0].grid()
-        self.axs[0].legend()
+        # self.axs[0].legend()
 
         for l in self.axs[0].get_lines():
             print(f'{l.get_color()} - {l.get_label()}')
 
         # ASSOC
-        runs = CGStorage().get_for_param(self.cache, 'assoc')
-        sizes = [r.get_specs()[self.cache]['assoc'] for r in runs]
+        runs = CGStorage().get_for_param(self.cache, 'ASSOC')
+        sizes = [r.get_specs()[self.cache]['ASSOC'] for r in runs]
         for func in self.funcs:
             funcs = [f for r in runs for f in r.get_functions() if str(f) == str(func)]
             miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
@@ -116,8 +125,8 @@ class CGMultiFuncPlot(CGPlot):
         self.axs[1].grid()
 
         # LINE
-        runs = CGStorage().get_for_param(self.cache, 'line_size')
-        sizes = [r.get_specs()[self.cache]['line_size'] + 'B' for r in runs]
+        runs = CGStorage().get_for_param(self.cache, 'LINE_SIZE')
+        sizes = [r.get_specs()[self.cache]['LINE_SIZE'] + 'B' for r in runs]
         for func in self.funcs:
             funcs = [f for r in runs for f in r.get_functions() if str(f) == str(func)]
             miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
@@ -130,7 +139,7 @@ class CGMultiFuncPlot(CGPlot):
         self.axs[2].grid()
 
         min_miss_rate = floor(min(self.min_miss_rates))
-        max_miss_rate = ceil(max(self.max_miss_rates))
+        max_miss_rate = max(self.max_miss_rates)
         self.axs[0].set_ylim([min_miss_rate, max_miss_rate])
         self.axs[1].set_ylim([min_miss_rate, max_miss_rate])
         self.axs[2].set_ylim([min_miss_rate, max_miss_rate])
@@ -139,10 +148,12 @@ class CGMultiFuncPlot(CGPlot):
 
 
 class CGGlobalPlot(CGPlot):
+    TYPE = 'global'
+
     def plot_subplots(self):
         # SIZE
-        runs = CGStorage().get_for_param(self.cache, 'size')
-        sizes = [CGPlotter.convert_to_bit_str(s) for s in config.CACHE_PARAMS[self.cache]['SIZES']]
+        runs = CGStorage().get_for_param(self.cache, 'SIZE')
+        sizes = [CGPlotter.convert_to_bit_str(s) for s in config.CACHE_PARAMS[self.cache]['SIZE']]
         miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, r.summary) for r in runs]
         self.min_miss_rates.append(min(miss_rates))
         self.max_miss_rates.append(max(miss_rates))
@@ -153,8 +164,8 @@ class CGGlobalPlot(CGPlot):
         self.axs[0].grid()
 
         # ASSOC
-        runs = CGStorage().get_for_param(self.cache, 'assoc')
-        sizes = [r.get_specs()[self.cache]['assoc'] for r in runs]
+        runs = CGStorage().get_for_param(self.cache, 'ASSOC')
+        sizes = [r.get_specs()[self.cache]['ASSOC'] for r in runs]
         miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, r.summary) for r in runs]
         self.min_miss_rates.append(min(miss_rates))
         self.max_miss_rates.append(max(miss_rates))
@@ -165,8 +176,8 @@ class CGGlobalPlot(CGPlot):
         self.axs[1].grid()
 
         # LINE
-        runs = CGStorage().get_for_param(self.cache, 'line_size')
-        sizes = [r.get_specs()[self.cache]['line_size'] + 'B' for r in runs]
+        runs = CGStorage().get_for_param(self.cache, 'LINE_SIZE')
+        sizes = [r.get_specs()[self.cache]['LINE_SIZE'] + 'B' for r in runs]
         miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, r.summary) for r in runs]
         self.min_miss_rates.append(min(miss_rates))
         self.max_miss_rates.append(max(miss_rates))
@@ -177,7 +188,7 @@ class CGGlobalPlot(CGPlot):
         self.axs[2].grid()
 
         min_miss_rate = floor(min(self.min_miss_rates))
-        max_miss_rate = ceil(max(self.max_miss_rates))
+        max_miss_rate = max(self.max_miss_rates)
         self.axs[0].set_ylim([min_miss_rate, max_miss_rate])
         self.axs[1].set_ylim([min_miss_rate, max_miss_rate])
         self.axs[2].set_ylim([min_miss_rate, max_miss_rate])

@@ -1,3 +1,4 @@
+import re
 import numpy
 
 from cachalyze import config
@@ -50,35 +51,48 @@ class CGAnalyzer:
         if cache == 'LL':
             return CGAnalyzer.total_misses_ll(events)
 
-    def get_thresholded_functions(self):
-        thresholded_functions = []
-        threshold = self.output.summary.Ir / 100 * config.THRESHOLD
-
-        # TODO: Make event variable to sort by configurable
-        functions = self.output.get_functions()
-        functions.sort(key=lambda func: func.events.Ir, reverse=True)
-
-        for function in functions:
-            threshold -= function.events.Ir
-            thresholded_functions.append(function)
-            if threshold <= 0:
-                return thresholded_functions
-
 
 class CGGlobalAnalyzer:
     def __init__(self, outputs):
         self.outputs = outputs
 
-    def get_functions_by_change(self, pre_def_funcs=[]):
-        functions = [f for output in self.outputs for f in output.get_functions()]
+    def filter_funcs(self, funcs):
+        if config.INCLUDE_FOLDER:
+            funcs = list(filter(lambda f: re.match(f'^{config.INCLUDE_FOLDER}', str(f)), funcs))
+        else:
+            if not config.INCLUDE_STANDARD_METHODS:
+                funcs = list(filter(lambda f: not str(f).startswith('???'), funcs))
+
+        return funcs
+
+    def get_single_filtered_funcs(self):
+        funcs = self.outputs[0].get_functions()
+        return self.filter_funcs(funcs)
+
+    def get_all_filtered_funcs(self):
+        funcs = [f for output in self.outputs for f in output.get_functions()]
+        return self.filter_funcs(funcs)
+
+    def get_thresholded_functions(self):
+        filtered_funcs = []
+        unfiltered_funcs = sorted(self.get_single_filtered_funcs(), reverse=True, key=lambda f: f.events.Ir)
+        total_instr = sum(f.events.Ir for f in unfiltered_funcs)
+        curr_instr = 0
+
+        while curr_instr / total_instr * 100 < config.THRESHOLD:
+            func = unfiltered_funcs.pop(0)
+            filtered_funcs.append(func)
+            curr_instr += func.events.Ir
+
+        return filtered_funcs
+
+    def get_functions_by_change(self, cache, pre_def_funcs=[]):
+        funcs = self.get_all_filtered_funcs()
         grouped_functions = {}
 
-        for f in functions:
+        for f in funcs:
             if pre_def_funcs:
                 if f not in pre_def_funcs:
-                    continue
-            if not config.INCLUDE_STANDARD_METHODS:
-                if str(f).startswith('???'):
                     continue
             if str(f) in grouped_functions:
                 grouped_functions[str(f)].append(f)
@@ -88,13 +102,13 @@ class CGGlobalAnalyzer:
         results = {}
 
         for f in grouped_functions.keys():
-            results[str(f)] = self._get_change_factor(grouped_functions[str(f)])
+            results[str(f)] = self._get_change_factor(cache, grouped_functions[str(f)])
 
         sorted_results = sorted(results.items(), reverse=True, key=lambda kv: kv[1])
 
         return [r[0] for r in sorted_results]
 
-    def _get_change_factor(self, funcs):
-        funcs = list(map(lambda f: CGAnalyzer.total_misses_d1(f.events), funcs))
+    def _get_change_factor(self, cache, funcs):
+        funcs = list(map(lambda f: CGAnalyzer.get_count_for_cache(cache, f.events), funcs))
         diffs = numpy.diff(funcs)
         return sum([abs(d) for d in diffs])
