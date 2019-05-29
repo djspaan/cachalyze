@@ -5,9 +5,9 @@ N_THREADS = 4
 MAX_PLOTTED_FUNCS = 5
 
 # ANALYZE
-THRESHOLD = 99
+THRESHOLD = 99.9
 INCLUDE_STANDARD_METHODS = False
-INCLUDE_FOLDER = '/home/dennisspaan/Workspace/test'
+INCLUDE_FOLDER = '/home/dennisspaan/Workspace/test/libs'
 MIN_MISS_RATE = 0.5
 
 CACHE_PARAMS = {
@@ -24,7 +24,7 @@ CACHE_PARAMS = {
 }
 
 # STORAGE
-SAVE_FIGURE = False
+SAVE_FIGURE = True
 OUT_DIR = 'out'
 OUT_PREFIX = 'cgrunner.out'
 

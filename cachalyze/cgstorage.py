@@ -28,7 +28,7 @@ class CGStorage:
                 'ASSOC': self.prefix + str(CGD1CacheConf.DEFAULT_SIZE) + ',' + param_regex + ','
                          + str(CGD1CacheConf.DEFAULT_LINE_SIZE) + r'\.' + self.DEFAULT_LL_CONF,
                 'LINE_SIZE': self.prefix + str(CGD1CacheConf.DEFAULT_SIZE) + ','
-                             + str(CGD1CacheConf.DEFAULT_ASSOC) + ',' + param_regex + r'\.'+ self.DEFAULT_LL_CONF
+                             + str(CGD1CacheConf.DEFAULT_ASSOC) + ',' + param_regex + r'\.' + self.DEFAULT_LL_CONF
             },
             'LL': {
                 'SIZE': self.prefix + self.DEFAULT_D1_CONF + r'\.' + param_regex + ','
@@ -40,6 +40,14 @@ class CGStorage:
             }
         }
         return regexes[cache][param]
+
+    def get_for_run_conf(self, rc):
+        regex = self.prefix + str(rc.d1.size) + ',' + str(rc.d1.assoc) + ',' + str(rc.d1.line_size) + r'\.' \
+                + str(rc.ll.size) + ',' + str(rc.ll.assoc) + ',' + str(rc.ll.line_size)
+
+        for f in os.listdir(config.OUT_DIR):
+            if re.match(regex, f):
+                return self.parse(f)
 
     def get_for_param(self, cache, param):
         outputs = []

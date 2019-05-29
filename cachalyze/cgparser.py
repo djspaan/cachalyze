@@ -1,27 +1,3 @@
-"""
-Cachegrind output file format:
-
-    file         ::= desc_line* cmd_line events_line data_line+ summary_line
-    desc_line    ::= 'desc:' ws? non_nl_string
-    cmd_line     ::= 'cmd:' ws? cmd
-    events_line  ::= 'events:' ws? (event ws)+
-    data_line    ::= file_line | fn_line | count_line
-    file_line    ::= 'fl=' filename
-    fn_line      ::= 'fn=' fn_name
-    count_line   ::= line_num ws? (count ws)+
-    summary_line ::= 'summary:' ws? (count ws)+
-    count        ::= num | '.'
-
-Where:
-    - non_nl_string is any string not containing a newline.
-    - cmd is a string holding the command line of the profiled program.
-    - event is a string containing no whitespace.
-    - filename and fn_name are strings.
-    - num and line_num are decimal numbers.
-    - ws is whitespace.
-
-"""
-
 from cachalyze.cgcontainers import CGOutput, CGFile, CGFunction, CGLine, CGEvents, CGObject
 
 
@@ -44,17 +20,14 @@ class CGParser:
 
     def cg_out_count_line(self, line):
         counts = self._read_count_line(line)
-        if not self._curr_line or counts[0] != self._curr_line.number:
-            line = CGLine(*counts)
-            self._curr_func.add_line(line)
-            self._curr_line = line
-        else:
-            self._curr_line.add_counts(*counts[1:])
+        line = CGLine(*counts)
+        self._curr_func.add_line(line)
+        self._curr_line = line
 
     def cg_out_fn_line(self, line):
-        function = CGFunction(self._curr_file, line)
-        self._curr_file.add_function(function)
-        self._curr_func = function
+        func = CGFunction(self._curr_file, line)
+        func = self._curr_file.add_func(func)
+        self._curr_func = func
 
     def cg_out_file_line(self, line):
         file = CGFile(line)

@@ -4,21 +4,46 @@ from cachalyze import config
 from cachalyze.cganalyzer import CGGlobalAnalyzer, CGAnalyzer
 from cachalyze.cgparser import CGParser
 from cachalyze.cgplotter import CGPlotter
-from cachalyze.cgrunner import CGAsyncRunner
+from cachalyze.cgrunner import CGAsyncRunner, CGRunConf, RUN_CONFS
 from cachalyze.cgstorage import CGStorage
+
+REALISED_VOLS_FUNC_MAPPING = {}
+
+
+def fill_mapping(output):
+    funcs = sorted(str(f) for f in output.get_funcs())
+    for c, f in enumerate(funcs):
+        REALISED_VOLS_FUNC_MAPPING[f] = c
+
+
+def get_mapping(func):
+    return REALISED_VOLS_FUNC_MAPPING[str(func)]
 
 
 def run():
     pass
 
-    # CGPlotter.plot_global('D1')
+    # output = CGStorage().get_for_run_conf(CGRunConf())
+    # fill_mapping(output)
+    # analyzer = CGGlobalAnalyzer([output])
+    # thres_funcs = analyzer.get_thresholded_functions()
+
+    # funcs = sorted(thres_funcs, reverse=True, key=lambda f: (f.events.D1mr + f.events.D1mw + f.events.DLmr + f.events.DLmw) / (f.events.Dr + f.events.Dw))
+    # for f in funcs:
+    #     print(f'{get_mapping(f)} & {f.events.format()}')
 
     # outputs = CGStorage().get_for_program()
     # analyser = CGGlobalAnalyzer(outputs)
-    # funcs = analyser.get_functions_by_change()[:5]
-    # CGPlotter.plot_funcs('D1', funcs)
+    # ch_funcs = analyser.get_functions_by_change('D1', thres_funcs)
+    # CGPlotter.plot_funcs('LL', ch_funcs[:10])
+    # for f in ch_funcs:
+    #     print(f'{f}')
 
-    # CGPlotter.plot_func('D1', '/home/dennisspaan/Workspace/test/x_pg_client/libs/pg_client/pg_query.h:Optiver::PgClient::PgQuery<0ul>::GetForceBinaryResults() const')
+    # funcs = sorted(funcs, reverse=True, key=lambda f: count_func(output.summary, f))
+    # funcs = analyzer.get_functions_by_change('D1', funcs)
+    # print(funcs)
+    # for f in funcs:
+    #     print(f)
 
     # PRINT THRESHOLDED FUNCTIONS
     # output = CGParser('/home/dennisspaan/Workspace/cachalyze/out/cgrunner.out.test.32768,8,64.8388608,16,64').parse()
@@ -27,8 +52,8 @@ def run():
     # for f in funcs:
     #     print(f)
 
-    # CGPlotter.plot_single_func('LL', '/home/dennisspaan/Workspace/test/x_common_libs/libs/common/../common
-    # /timing.h:Optiver::TimeSpan::GetNanosecondsDouble() const') CGPlotter.plot_funcs('D1',
+    # CGPlotter.plot_func('D1', '/home/dennisspaan/Workspace/test/libs/test/actions/calculations.cc:Optiver::RealisedVols::(anonymous namespace)::GenerateHedgepoints(double, unsigned long, unsigned long)')
+    # 'CGPlotter.plot_funcs('D1',
     # ['/home/dennisspaan/Workspace/test/x_common_libs/libs/common/../common/timing.h:Optiver::TimeSpan
     # ::GetNanosecondsDouble() const', '/home/dennisspaan/Workspace/test/x_common_libs/libs/common/../common
     # /timing.h:Optiver::TimeSpan::GetNanosecondsDouble() const']) CGPlotter.plot_global('LL')
@@ -69,15 +94,13 @@ def run():
     # CGPlotter.plot_funcs('D1', funcs)
 
     # PRINT MOST CHANGING FUNCTIONS WITH MOST INSTRUCTIONS
-    outputs = CGStorage().get_for_program()
-    analyser = CGGlobalAnalyzer(outputs)
-    thres_funcs = analyser.get_thresholded_functions()
-    ch_funcs = analyser.get_functions_by_change('D1', thres_funcs)
-
-    for f in ch_funcs:
-        print(f'{f}')
-
-    CGPlotter.plot_funcs('D1', ch_funcs[:5])
+    # outputs = CGStorage().get_for_program()
+    # analyser = CGGlobalAnalyzer(outputs)
+    # thres_funcs = analyser.get_thresholded_functions()
+    # ch_funcs = analyser.get_functions_by_change('D1', thres_funcs)
+    # for f in ch_funcs:
+    #     print(f'{f}')
+    # CGPlotter.plot_funcs('D1', ch_funcs[:10])
 
     # CGStorage().get_for_param('D1', 'SIZE')
 

@@ -19,7 +19,7 @@ class CGOutput:
                 specs[m[1]] = {'SIZE': m[2], 'LINE_SIZE': m[3], 'ASSOC': m[4]}
         return specs
 
-    def get_functions(self):
+    def get_funcs(self):
         return [function for file in self.files for function in file.functions.values()]
 
     def get_events(self):
@@ -88,11 +88,13 @@ class CGFile:
         file.close()
         return self.content
 
-    def add_function(self, function):
-        if function in self.functions:
-            self.functions[function].merge(function)
+    def add_func(self, func):
+        if str(func) in self.functions:
+            self.functions[str(func)].merge(func)
+            return self.functions[str(func)]
         else:
-            self.functions[function] = function
+            self.functions[str(func)] = func
+            return func
 
 
 class CGFunction:
@@ -126,9 +128,6 @@ class CGLine:
         self.number = number
         self.events = CGEvents(*args)
 
-    def add_counts(self, *args):
-        self.events.add(CGEvents(*args))
-
 
 class CGEvents:
     def __init__(self, Ir=0, Dr=0, Dw=0, I1mr=0, D1mr=0, D1mw=0, ILmr=0, DLmr=0, DLmw=0):
@@ -146,14 +145,12 @@ class CGEvents:
         for event in self.__dict__.keys():
             self.__dict__[event] += events.__dict__[event]
 
-    def format(self, width=10):
-        return '{:{width}} {:{width}} {:{width}} {:{width}} {:{width}} {:{width}} {:{width}} {:{width}} {:{width}}' \
-            .format(self.Ir, self.Dr, self.Dw, self.I1mr, self.D1mr, self.D1mw, self.ILmr, self.DLmr, self.DLmw,
-                    width=width, grouping=True)
+    def format(self):
+        return '{:,} & {:,} & {:,} & {:,} & {:,} & {:,} & {:,} & {:,} & {:,} \\\\' \
+            .format(self.Ir, self.Dr, self.Dw, self.I1mr, self.D1mr, self.D1mw, self.ILmr, self.DLmr, self.DLmw)
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
 
     def __str__(self):
-        return f'{self.Ir:,}  {self.Dr:,}  {self.Dw:,}  {self.I1mr:,} \
-         {self.D1mr:,}  {self.D1mw:,}  {self.ILmr:,}  {self.DLmr:,}  {self.DLmw:,}'
+        return f'Ir:{self.Ir:,}  Dr:{self.Dr:,}  Dw:{self.Dw:,}  I1mr:{self.I1mr:,} D1mr:{self.D1mr:,}  D1mw:{self.D1mw:,}  ILmr:{self.ILmr:,}  DLmr:{self.DLmr:,}  DLmw:{self.DLmw:,}'
