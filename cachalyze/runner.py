@@ -1,43 +1,57 @@
 import re
 
 from cachalyze import config
-from cachalyze.cganalyzer import CGGlobalAnalyzer, CGAnalyzer
+from cachalyze.cganalyzer import CGGlobalAnalyzer, CGAnalyzer, CGFuncMapper
 from cachalyze.cgparser import CGParser
 from cachalyze.cgplotter import CGPlotter
 from cachalyze.cgrunner import CGAsyncRunner, CGRunConf, RUN_CONFS
 from cachalyze.cgstorage import CGStorage
 
-REALISED_VOLS_FUNC_MAPPING = {}
-
-
-def fill_mapping(output):
-    funcs = sorted(str(f) for f in output.get_funcs())
-    for c, f in enumerate(funcs):
-        REALISED_VOLS_FUNC_MAPPING[f] = c
-
-
-def get_mapping(func):
-    return REALISED_VOLS_FUNC_MAPPING[str(func)]
-
 
 def run():
     pass
+    output = CGStorage().get_for_run_conf(CGRunConf())
+    CGFuncMapper().fill_mapping(output)
 
-    # output = CGStorage().get_for_run_conf(CGRunConf())
-    # fill_mapping(output)
+    # funcs = CGFuncMapper().get_funcs([59, 80, 75, 53, 38, 39, 41])
+
+    # fil_funcs = [f for f in output.get_funcs() if str(f) in funcs]
+    # sor_funcs = sorted(fil_funcs, reverse=True, key=lambda f: f.events.Ir)
+    #
+    # for f in sor_funcs:
+    #     print(f'{CGFuncMapper().get_mapping(f)} & {f.events.format()} \\\\')
+
+    # func = CGFuncMapper().get_func(38)
+    # CGPlotter.plot_func('D1', func)
+
+    # f = CGFuncMapper().get_func(38)
+    # f = output.get_func(f)
+    # file = f.file
+    # for line, content, events in file.get_lines_with_events():
+    #     print('{} {} {}'.format(line, events.format(), content))
+    # quit()
+
     # analyzer = CGGlobalAnalyzer([output])
     # thres_funcs = analyzer.get_thresholded_functions()
+    # outputs = CGStorage().get_for_program()
+    # analyser = CGGlobalAnalyzer(outputs)
+    # ch_funcs = analyser.get_functions_by_change('D1', thres_funcs)
+
+    # f = output.get_func(ch_funcs[1])
+    # file = f.file
+    # for line, content, events in file.get_lines_with_events():
+    #     print('{} {} {}'.format(line, events.format(), content))
 
     # funcs = sorted(thres_funcs, reverse=True, key=lambda f: (f.events.D1mr + f.events.D1mw + f.events.DLmr + f.events.DLmw) / (f.events.Dr + f.events.Dw))
     # for f in funcs:
-    #     print(f'{get_mapping(f)} & {f.events.format()}')
+    #     print(f'{CGFuncMapper().get_mapping(f)} & {f.events.format()}')
 
     # outputs = CGStorage().get_for_program()
     # analyser = CGGlobalAnalyzer(outputs)
     # ch_funcs = analyser.get_functions_by_change('D1', thres_funcs)
-    # CGPlotter.plot_funcs('LL', ch_funcs[:10])
+    # CGPlotter.plot_funcs('D1', ch_funcs[:10])
     # for f in ch_funcs:
-    #     print(f'{f}')
+    #     print(f'{CGFuncMapper().get_mapping(f)} - {f}')
 
     # funcs = sorted(funcs, reverse=True, key=lambda f: count_func(output.summary, f))
     # funcs = analyzer.get_functions_by_change('D1', funcs)
@@ -110,4 +124,4 @@ def run():
     #     print('{:>11}'.format(event), end='')
     # print('')
     # for line, content, events in file.get_lines_with_events():
-    #     print('{} {}'.format(events.format(), content))
+    #     print('{} {} {}'.format(line.number, events.format(), content))

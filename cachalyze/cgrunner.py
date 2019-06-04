@@ -77,17 +77,17 @@ class CGRunner:
 
 class CGAsyncRunner:
     @staticmethod
-    async def _run_conf(conf):
+    async def run_conf(conf):
         await CGRunner(conf).run_async()
 
     @staticmethod
-    async def _run_queue(loop):
+    async def run_queue(loop):
         tasks = set()
         i = 0
         while i < len(RUN_CONFS):
             if len(tasks) >= config.N_THREADS:
                 _done, tasks = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-            tasks.add(loop.create_task(CGAsyncRunner._run_conf(RUN_CONFS[i])))
+            tasks.add(loop.create_task(CGAsyncRunner.run_conf(RUN_CONFS[i])))
             i += 1
         await asyncio.wait(tasks)
 
@@ -95,7 +95,7 @@ class CGAsyncRunner:
     def run():
         loop = asyncio.get_event_loop()
         loop.run_until_complete(
-            asyncio.wait([CGAsyncRunner._run_queue(loop)]))
+            asyncio.wait([CGAsyncRunner.run_queue(loop)]))
         loop.close()
 
 

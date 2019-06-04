@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
 import cachalyze.config as config
-from cachalyze import runner
 from cachalyze.cganalyzer import CGGlobalAnalyzer, CGAnalyzer
 from cachalyze.cgstorage import CGStorage
+from cachalyze.cganalyzer import CGFuncMapper
 
 
 class CGPlot:
@@ -21,9 +21,8 @@ class CGPlot:
         self.plot_subplots()
         plt.tight_layout()
         if config.SAVE_FIGURE:
-            file_name = f'{config.OUT_DIR}/{config.PROGRAM_ALIAS}_{self.TYPE}_{self.cache}'
-            if not os.path.isfile(file_name):
-                plt.savefig(file_name)
+            file_name = f'{config.OUT_DIR}/{config.OUT_PREFIX}.{config.PROGRAM_ALIAS}_{self.TYPE}_{self.cache}.png'
+            plt.savefig(file_name)
 
         plt.show()
 
@@ -97,10 +96,11 @@ class CGMultiFuncPlot(CGPlot):
         # SIZE
         runs = CGStorage().get_for_param(self.cache, 'SIZE')
         sizes = [CGPlotter.convert_to_bit_str(s) for s in config.CACHE_PARAMS[self.cache]['SIZE']]
-        for func in self.funcs:
+        for gg, func in enumerate(self.funcs):
             funcs = [f for r in runs for f in r.get_funcs() if str(f) == str(func)]
             miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
-            self.axs[0].plot(sizes, miss_rates, 's-', label=runner.get_mapping(str(funcs[0])))
+            ls = ['-', '--', '-.', ':'][gg % 4]
+            self.axs[0].plot(sizes, miss_rates, 's-', label=CGFuncMapper().get_mapping(str(funcs[0])), alpha=0.7, linestyle=ls, )
             self.min_miss_rates.append(min(miss_rates))
             self.max_miss_rates.append(max(miss_rates))
 
@@ -118,7 +118,7 @@ class CGMultiFuncPlot(CGPlot):
         for func in self.funcs:
             funcs = [f for r in runs for f in r.get_funcs() if str(f) == str(func)]
             miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
-            self.axs[1].plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name())
+            self.axs[1].plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name(), alpha=0.7)
             self.min_miss_rates.append(min(miss_rates))
             self.max_miss_rates.append(max(miss_rates))
 
@@ -132,7 +132,7 @@ class CGMultiFuncPlot(CGPlot):
         for func in self.funcs:
             funcs = [f for r in runs for f in r.get_funcs() if str(f) == str(func)]
             miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
-            self.axs[2].plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name())
+            self.axs[2].plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name(), alpha=0.7)
             self.min_miss_rates.append(min(miss_rates))
             self.max_miss_rates.append(max(miss_rates))
 

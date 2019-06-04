@@ -4,6 +4,7 @@ import numpy
 from cachalyze import config
 from cachalyze import runner
 
+
 class CGAnalyzer:
     def __init__(self, output):
         self.output = output
@@ -112,7 +113,7 @@ class CGGlobalAnalyzer:
 
         # PRINT CHANGE FACTORS
         # for k,v in sorted_results:
-        #     print(f'{runner.get_mapping(k)} & {round(v,5)} \\\\')
+        #     print(f'{CGFuncMapper().get_mapping(k)} & {round(v,5)} \\\\')
 
         return [r[0] for r in sorted_results]
 
@@ -120,3 +121,34 @@ class CGGlobalAnalyzer:
         funcs = list(map(lambda f: CGAnalyzer.get_count_for_cache(cache, f.events), funcs))
         diffs = numpy.diff(funcs)
         return sum([abs(d) for d in diffs])
+
+
+class CGFuncMapper:
+    __instance = None
+    output = None
+    mapping = {}
+
+    def __new__(cls, **kwargs):
+        if CGFuncMapper.__instance is None:
+            CGFuncMapper.__instance = object.__new__(cls)
+        return CGFuncMapper.__instance
+
+    def fill_mapping(self, output):
+        funcs = sorted(str(f) for f in output.get_funcs())
+        for c, f in enumerate(funcs):
+            self.mapping[f] = c
+
+    def get_mapping(self, func):
+        return self.mapping[str(func)]
+
+    def get_func(self, mapping):
+        for f, m in self.mapping.items():
+            if m == mapping:
+                return f
+
+    def get_funcs(self, mappings):
+        funcs = []
+        for f, m in self.mapping.items():
+            if m in mappings:
+                funcs.append(f)
+        return funcs

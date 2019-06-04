@@ -22,6 +22,12 @@ class CGOutput:
     def get_funcs(self):
         return [function for file in self.files for function in file.functions.values()]
 
+    def get_func(self, func):
+        funcs = self.get_funcs()
+        for f in funcs:
+            if str(f) == func:
+                return f
+
     def get_events(self):
         return self.events or self.calculate_events()
 
@@ -64,7 +70,7 @@ class CGFile:
         self.content = []
 
     def get_lines(self):
-        return [l for f in self.functions for l in f.lines.values()]
+        return [l for f in self.functions.values() for l in f.lines.values()]
 
     def get_lines_with_events(self):
         result = []
@@ -110,6 +116,8 @@ class CGFunction:
     def add_line(self, line):
         if line.number not in self.lines:
             self.lines[line.number] = line
+        else:
+            self.lines[line.number].events.add(line.events)
         self.events.add(line.events)
 
     def merge(self, other):
@@ -146,7 +154,7 @@ class CGEvents:
             self.__dict__[event] += events.__dict__[event]
 
     def format(self):
-        return '{:,} & {:,} & {:,} & {:,} & {:,} & {:,} & {:,} & {:,} & {:,} \\\\' \
+        return '{:,} & {:,} & {:,} & {:,} & {:,} & {:,} & {:,} & {:,} & {:,}' \
             .format(self.Ir, self.Dr, self.Dw, self.I1mr, self.D1mr, self.D1mw, self.ILmr, self.DLmr, self.DLmw)
 
     def __eq__(self, other):
