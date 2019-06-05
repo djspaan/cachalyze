@@ -100,7 +100,7 @@ class CGMultiFuncPlot(CGPlot):
             funcs = [f for r in runs for f in r.get_funcs() if str(f) == str(func)]
             miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
             ls = ['-', '--', '-.', ':'][gg % 4]
-            self.axs[0].plot(sizes, miss_rates, 's-', label=CGFuncMapper().get_mapping(str(funcs[0])), alpha=0.7, linestyle=ls, )
+            self.axs[0].plot(sizes, miss_rates, 's-', label=CGFuncMapper().get_mapping(str(funcs[0])), alpha=0.7, linestyle=ls)
             self.min_miss_rates.append(min(miss_rates))
             self.max_miss_rates.append(max(miss_rates))
 
@@ -109,16 +109,17 @@ class CGMultiFuncPlot(CGPlot):
         self.axs[0].grid()
         self.axs[0].legend()
 
-        for l in self.axs[0].get_lines():
-            print(f'{l.get_color()} - {l.get_label()}')
+        # for l in self.axs[0].get_lines():
+        #     print(f'{l.get_color()} - {l.get_label()}')
 
         # ASSOC
         runs = CGStorage().get_for_param(self.cache, 'ASSOC')
         sizes = [r.get_specs()[self.cache]['ASSOC'] for r in runs]
-        for func in self.funcs:
+        for gg, func in enumerate(self.funcs):
             funcs = [f for r in runs for f in r.get_funcs() if str(f) == str(func)]
             miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
-            self.axs[1].plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name(), alpha=0.7)
+            ls = ['-', '--', '-.', ':'][gg % 4]
+            self.axs[1].plot(sizes, miss_rates, 's-', alpha=0.7, linestyle=ls)
             self.min_miss_rates.append(min(miss_rates))
             self.max_miss_rates.append(max(miss_rates))
 
@@ -129,10 +130,78 @@ class CGMultiFuncPlot(CGPlot):
         # LINE
         runs = CGStorage().get_for_param(self.cache, 'LINE_SIZE')
         sizes = [r.get_specs()[self.cache]['LINE_SIZE'] + 'B' for r in runs]
-        for func in self.funcs:
+        for gg, func in enumerate(self.funcs):
             funcs = [f for r in runs for f in r.get_funcs() if str(f) == str(func)]
             miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
-            self.axs[2].plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name(), alpha=0.7)
+            ls = ['-', '--', '-.', ':'][gg % 4]
+            self.axs[2].plot(sizes, miss_rates, 's-', alpha=0.7, linestyle=ls)
+            self.min_miss_rates.append(min(miss_rates))
+            self.max_miss_rates.append(max(miss_rates))
+
+        self.axs[2].yaxis.set_major_formatter(ticker.PercentFormatter())
+        self.axs[2].set_title('line size')
+        self.axs[2].grid()
+
+        min_miss_rate = floor(min(self.min_miss_rates))
+        max_miss_rate = max(self.max_miss_rates)
+        self.axs[0].set_ylim([min_miss_rate, max_miss_rate])
+        self.axs[1].set_ylim([min_miss_rate, max_miss_rate])
+        self.axs[2].set_ylim([min_miss_rate, max_miss_rate])
+
+        self.axs[0].set_ylabel(f'{self.cache} r+w miss rate')
+
+
+class CGMultiLinePlot(CGPlot):
+    TYPE = 'reg_lines'
+
+    def __init__(self, cache, func, lines):
+        self.func = func
+        self.lines = lines
+        super().__init__(cache)
+
+    def plot_subplots(self):
+        # SIZE
+        runs = CGStorage().get_for_param(self.cache, 'SIZE')
+        sizes = [CGPlotter.convert_to_bit_str(s) for s in config.CACHE_PARAMS[self.cache]['SIZE']]
+        for gg, line in enumerate(self.lines):
+            funcs = [f for r in runs for f in r.get_funcs() if str(f) == str(self.func)]
+            lines = [l for f in funcs for l in f.lines.values() if l.number == line]
+            miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, l.events) for l in lines]
+            ls = ['-', '--', '-.', ':'][gg % 4]
+            self.axs[0].plot(sizes, miss_rates, 's-', label=str(line), alpha=0.7, linestyle=ls)
+            self.min_miss_rates.append(min(miss_rates))
+            self.max_miss_rates.append(max(miss_rates))
+
+        self.axs[0].yaxis.set_major_formatter(ticker.PercentFormatter())
+        self.axs[0].set_title('size')
+        self.axs[0].grid()
+        self.axs[0].legend()
+
+        # ASSOC
+        runs = CGStorage().get_for_param(self.cache, 'ASSOC')
+        sizes = [r.get_specs()[self.cache]['ASSOC'] for r in runs]
+        for gg, line in enumerate(self.lines):
+            funcs = [f for r in runs for f in r.get_funcs() if str(f) == str(self.func)]
+            lines = [l for f in funcs for l in f.lines.values() if l.number == line]
+            miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, l.events) for l in lines]
+            ls = ['-', '--', '-.', ':'][gg % 4]
+            self.axs[1].plot(sizes, miss_rates, 's-', label=str(line), alpha=0.7, linestyle=ls)
+            self.min_miss_rates.append(min(miss_rates))
+            self.max_miss_rates.append(max(miss_rates))
+
+        self.axs[1].yaxis.set_major_formatter(ticker.PercentFormatter())
+        self.axs[1].set_title('set-associativity')
+        self.axs[1].grid()
+
+        # LINE
+        runs = CGStorage().get_for_param(self.cache, 'LINE_SIZE')
+        sizes = [r.get_specs()[self.cache]['LINE_SIZE'] + 'B' for r in runs]
+        for gg, line in enumerate(self.lines):
+            funcs = [f for r in runs for f in r.get_funcs() if str(f) == str(self.func)]
+            lines = [l for f in funcs for l in f.lines.values() if l.number == line]
+            miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, l.events) for l in lines]
+            ls = ['-', '--', '-.', ':'][gg % 4]
+            self.axs[2].plot(sizes, miss_rates, 's-', label=str(line), alpha=0.7, linestyle=ls)
             self.min_miss_rates.append(min(miss_rates))
             self.max_miss_rates.append(max(miss_rates))
 
@@ -212,6 +281,10 @@ class CGPlotter:
     @staticmethod
     def plot_funcs(cache, funcs):
         CGMultiFuncPlot(cache, funcs).plot()
+
+    @staticmethod
+    def plot_lines(cache, func, lines):
+        CGMultiLinePlot(cache, func, lines).plot()
 
     @staticmethod
     def plot_global(cache):

@@ -1,5 +1,3 @@
-import re
-
 from cachalyze import config
 from cachalyze.cganalyzer import CGGlobalAnalyzer, CGAnalyzer, CGFuncMapper
 from cachalyze.cgparser import CGParser
@@ -13,8 +11,27 @@ def run():
     output = CGStorage().get_for_run_conf(CGRunConf())
     CGFuncMapper().fill_mapping(output)
 
-    # funcs = CGFuncMapper().get_funcs([59, 80, 75, 53, 38, 39, 41])
+    # PLOT STATS PER LINE
+    # func = output.get_func(CGFuncMapper().get_func(67))
+    # lines = [l for l in func.lines.values() if l.number in [151, 141, 145, 142, 137]]
+    # for l in lines:
+    #     print(f'{l.number} & {l.events.format()} \\\\')
 
+    # PLOT SINGLE FUNC
+    # func = CGFuncMapper().get_func(67)
+    # CGPlotter.plot_func('LL', func)
+
+    # PLOT MOST CHANGING LINES FOR FUNCTION
+    # outputs = CGStorage().get_for_program()
+    # analyser = CGGlobalAnalyzer(outputs)
+    # func = output.get_func(CGFuncMapper().get_func(67))
+    # pre_def_lines = analyser.get_thresholded_lines_for_func(func)
+    # pre_def_lines = [l.number for l in pre_def_lines]
+    # ch_lines = analyser.get_lines_by_change_for_func('LL', func, pre_def_lines)
+    # CGPlotter.plot_lines('LL', func, ch_lines)
+
+    # ?
+    # funcs = CGFuncMapper().get_funcs([59, 80, 75, 53, 38, 39, 41])
     # fil_funcs = [f for f in output.get_funcs() if str(f) in funcs]
     # sor_funcs = sorted(fil_funcs, reverse=True, key=lambda f: f.events.Ir)
     #
@@ -107,16 +124,12 @@ def run():
     #     print(f)
     # CGPlotter.plot_funcs('D1', funcs)
 
-    # PRINT MOST CHANGING FUNCTIONS WITH MOST INSTRUCTIONS
+    # PLOT MOST CHANGING FUNCTIONS
     # outputs = CGStorage().get_for_program()
     # analyser = CGGlobalAnalyzer(outputs)
-    # thres_funcs = analyser.get_thresholded_functions()
+    # thres_funcs = analyser.get_thresholded_funcs()
     # ch_funcs = analyser.get_functions_by_change('D1', thres_funcs)
-    # for f in ch_funcs:
-    #     print(f'{f}')
     # CGPlotter.plot_funcs('D1', ch_funcs[:10])
-
-    # CGStorage().get_for_param('D1', 'SIZE')
 
     # PRINT LINES WITH EVENTS
     # print(file.path)

@@ -2,7 +2,6 @@ import re
 import numpy
 
 from cachalyze import config
-from cachalyze import runner
 
 
 class CGAnalyzer:
@@ -75,7 +74,7 @@ class CGGlobalAnalyzer:
         funcs = [f for output in self.outputs for f in output.get_funcs()]
         return self.filter_funcs(funcs)
 
-    def get_thresholded_functions(self):
+    def get_thresholded_funcs(self):
         filtered_funcs = []
         unfiltered_funcs = sorted(self.get_single_filtered_funcs(), reverse=True,
                                   key=lambda f: f.events.Dr + f.events.Dw)
@@ -89,6 +88,28 @@ class CGGlobalAnalyzer:
             curr += func.events.Dw
 
         return filtered_funcs
+
+    def get_thresholded_lines_for_func(self, func):
+        """
+        Takes the lines with the most cache misses of a function till LINE_THRESHOLD is reached.
+        Works only for the lines of the function param given.
+
+        :param func: CGFunction
+        :return: [CGLine]
+        """
+        filtered_lines = []
+        unfiltered_lines = sorted(func.lines.values(), reverse=True,
+                                  key=lambda l: l.events.Dr + l.events.Dw)
+        total = sum(l.events.Dr + l.events.Dw for l in unfiltered_lines)
+        curr = 0
+
+        while curr / total * 100 < config.LINE_THRESHOLD:
+            line = unfiltered_lines.pop(0)
+            filtered_lines.append(line)
+            curr += line.events.Dr
+            curr += line.events.Dw
+
+        return filtered_lines
 
     def get_functions_by_change(self, cache, pre_def_funcs=[]):
         funcs = self.get_all_filtered_funcs()
@@ -117,9 +138,43 @@ class CGGlobalAnalyzer:
 
         return [r[0] for r in sorted_results]
 
-    def _get_change_factor(self, cache, funcs):
-        funcs = list(map(lambda f: CGAnalyzer.get_count_for_cache(cache, f.events), funcs))
-        diffs = numpy.diff(funcs)
+    def get_lines_by_change_for_func(self, cache, func, pre_def_lines=[]):
+        """
+
+        :param func: CGFunction
+        :param cache: str elem of {"D1","LL"}
+        :param pre_def_lines: [int]
+        :return: [int]
+        """
+        funcs = [f for f in self.get_all_filtered_funcs() if str(f) == str(func)]
+        lines = [l for f in funcs for l in f.lines.values()]
+        grouped_lines = {}
+
+        for l in lines:
+            if pre_def_lines:
+                if l.number not in pre_def_lines:
+                    continue
+            if l.number in grouped_lines:
+                grouped_lines[l.number].append(l)
+            else:
+                grouped_lines[l.number] = [l]
+
+        results = {}
+
+        for l in grouped_lines.keys():
+            results[l] = self._get_change_factor(cache, grouped_lines[l])
+
+        sorted_results = sorted(results.items(), reverse=True, key=lambda kv: kv[1])
+
+        # PRINT CHANGE FACTORS
+        for k,v in sorted_results:
+            print(f'{k} & {round(v,5)} \\\\')
+
+        return [r[0] for r in sorted_results]
+
+    def _get_change_factor(self, cache, regions):
+        regions = list(map(lambda r: CGAnalyzer.get_count_for_cache(cache, r.events), regions))
+        diffs = numpy.diff(regions)
         return sum([abs(d) for d in diffs])
 
 
