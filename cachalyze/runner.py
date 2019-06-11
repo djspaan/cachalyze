@@ -2,14 +2,13 @@ from cachalyze import config
 from cachalyze.cganalyzer import CGGlobalAnalyzer, CGAnalyzer, CGFuncMapper
 from cachalyze.cgparser import CGParser
 from cachalyze.cgplotter import CGPlotter
-from cachalyze.cgrunner import CGAsyncRunner, CGRunConf, RUN_CONFS
+from cachalyze.cgrunner import CGAsyncRunner, CGRunConf
 from cachalyze.cgstorage import CGStorage
 
 
 def run():
     pass
-    output = CGStorage().get_for_run_conf(CGRunConf())
-    CGFuncMapper().fill_mapping(output)
+    # CGFuncMapper().fill_mapping(CGStorage().get_for_run_conf(CGRunConf()))
 
     # PLOT STATS PER LINE
     # func = output.get_func(CGFuncMapper().get_func(67))
@@ -117,12 +116,7 @@ def run():
     #     print('{} {}'.format(func.events, func))
 
     # PRINT MOST CHANGING FUNCTIONS
-    # outputs = CGStorage().get_for_program()
-    # analyser = CGGlobalAnalyzer(outputs)
-    # funcs = analyser.get_functions_by_change()
-    # for f in funcs:
-    #     print(f)
-    # CGPlotter.plot_funcs('D1', funcs)
+
 
     # PLOT MOST CHANGING FUNCTIONS
     # outputs = CGStorage().get_for_program()

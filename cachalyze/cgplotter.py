@@ -1,10 +1,9 @@
-import os
-from math import ceil, floor
+from math import floor
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
-import cachalyze.config as config
-from cachalyze.cganalyzer import CGGlobalAnalyzer, CGAnalyzer
+from cachalyze.config import Config
+from cachalyze.cganalyzer import CGAnalyzer, CGGlobalAnalyzer
 from cachalyze.cgstorage import CGStorage
 from cachalyze.cganalyzer import CGFuncMapper
 
@@ -20,10 +19,9 @@ class CGPlot:
     def plot(self):
         self.plot_subplots()
         plt.tight_layout()
-        if config.SAVE_FIGURE:
-            file_name = f'{config.OUT_DIR}/{config.OUT_PREFIX}.{config.PROGRAM_ALIAS}_{self.TYPE}_{self.cache}.png'
+        if Config.SAVE_FIGURE:
+            file_name = f'{Config.OUT_DIR}/{Config.OUT_PREFIX}.{Config.PROGRAM_ALIAS}_{self.TYPE}_{self.cache}.png'
             plt.savefig(file_name)
-
         plt.show()
 
     def plot_subplots(self):
@@ -40,7 +38,7 @@ class CGSingleFuncPlot(CGPlot):
     def plot_subplots(self):
         # SIZE
         runs = CGStorage().get_for_param(self.cache, 'SIZE')
-        sizes = [CGPlotter.convert_to_bit_str(s) for s in config.CACHE_PARAMS[self.cache]['SIZE']]
+        sizes = [CGPlotter.convert_to_bit_str(s) for s in Config.CACHE_PARAMS[self.cache]['SIZE']]
         funcs = [f for r in runs for f in r.get_funcs() if str(f) == str(self.func)]
         miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
         self.axs[0].plot(sizes, miss_rates, 's-', label=funcs[0].get_formatted_name())
@@ -95,12 +93,13 @@ class CGMultiFuncPlot(CGPlot):
     def plot_subplots(self):
         # SIZE
         runs = CGStorage().get_for_param(self.cache, 'SIZE')
-        sizes = [CGPlotter.convert_to_bit_str(s) for s in config.CACHE_PARAMS[self.cache]['SIZE']]
+        sizes = [CGPlotter.convert_to_bit_str(s) for s in Config.CACHE_PARAMS[self.cache]['SIZE']]
         for gg, func in enumerate(self.funcs):
             funcs = [f for r in runs for f in r.get_funcs() if str(f) == str(func)]
             miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, f.events) for f in funcs]
             ls = ['-', '--', '-.', ':'][gg % 4]
-            self.axs[0].plot(sizes, miss_rates, 's-', label=CGFuncMapper().get_mapping(str(funcs[0])), alpha=0.7, linestyle=ls)
+            self.axs[0].plot(sizes, miss_rates, 's-', label=CGFuncMapper().get_mapping(str(funcs[0])), alpha=0.7,
+                             linestyle=ls)
             self.min_miss_rates.append(min(miss_rates))
             self.max_miss_rates.append(max(miss_rates))
 
@@ -162,7 +161,7 @@ class CGMultiLinePlot(CGPlot):
     def plot_subplots(self):
         # SIZE
         runs = CGStorage().get_for_param(self.cache, 'SIZE')
-        sizes = [CGPlotter.convert_to_bit_str(s) for s in config.CACHE_PARAMS[self.cache]['SIZE']]
+        sizes = [CGPlotter.convert_to_bit_str(s) for s in Config.CACHE_PARAMS[self.cache]['SIZE']]
         for gg, line in enumerate(self.lines):
             funcs = [f for r in runs for f in r.get_funcs() if str(f) == str(self.func)]
             lines = [l for f in funcs for l in f.lines.values() if l.number == line]
@@ -224,7 +223,7 @@ class CGGlobalPlot(CGPlot):
     def plot_subplots(self):
         # SIZE
         runs = CGStorage().get_for_param(self.cache, 'SIZE')
-        sizes = [CGPlotter.convert_to_bit_str(s) for s in config.CACHE_PARAMS[self.cache]['SIZE']]
+        sizes = [CGPlotter.convert_to_bit_str(s) for s in Config.CACHE_PARAMS[self.cache]['SIZE']]
         miss_rates = [CGAnalyzer.get_count_for_cache(self.cache, r.summary) for r in runs]
         self.min_miss_rates.append(min(miss_rates))
         self.max_miss_rates.append(max(miss_rates))
@@ -283,8 +282,28 @@ class CGPlotter:
         CGMultiFuncPlot(cache, funcs).plot()
 
     @staticmethod
+    def plot_thresholded_most_changing_funcs(cache):
+        outputs = CGStorage().get_for_program()
+        analyser = CGGlobalAnalyzer(outputs)
+        thres_funcs = analyser.get_thresholded_funcs()
+        funcs = analyser.get_functions_by_change(cache, thres_funcs)
+        for f in funcs:
+            print(f'{CGFuncMapper().get_mapping(f)} - {f}')
+        CGPlotter.plot_funcs(cache, funcs)
+
+    @staticmethod
     def plot_lines(cache, func, lines):
         CGMultiLinePlot(cache, func, lines).plot()
+
+    @staticmethod
+    def plot_thresholded_most_changing_lines_for_func(cache, func_mapping):
+        outputs = CGStorage().get_for_program()
+        analyser = CGGlobalAnalyzer(outputs)
+        func = outputs[0].get_func(CGFuncMapper().get_func(func_mapping))
+        pre_def_lines = analyser.get_thresholded_lines_for_func(func)
+        pre_def_lines = [l.number for l in pre_def_lines]
+        ch_lines = analyser.get_lines_by_change_for_func(cache, func, pre_def_lines)
+        CGPlotter.plot_lines(cache, func, ch_lines)
 
     @staticmethod
     def plot_global(cache):

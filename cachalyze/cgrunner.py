@@ -1,7 +1,7 @@
 import asyncio
 import os
 
-import cachalyze.config as config
+from cachalyze.config import Config
 from cachalyze.cgparser import CGParser
 
 
@@ -43,14 +43,14 @@ class CGRunConf:
     def __init__(self, d1=None, ll=None):
         self.d1 = d1 or CGD1CacheConf()
         self.ll = ll or CGLLCacheConf()
-        self.output_file = f'out/cgrunner.out.{config.PROGRAM_ALIAS}.{self.d1}.{self.ll}'
+        self.output_file = f'{Config.OUT_DIR}/{Config.OUT_PREFIX}.{Config.PROGRAM_ALIAS}.{self.d1}.{self.ll}'
 
     def get_cmd(self):
         cmd = 'valgrind --tool=callgrind --cache-sim=yes --compress-strings=no --compress-pos=no '
         cmd += f'--callgrind-out-file={self.output_file}'
         cmd += f' {self.d1.get_cmd_option()}'
         cmd += f' {self.ll.get_cmd_option()}'
-        cmd += f' {config.PROGRAM_CMD}'
+        cmd += f' {Config.PROGRAM_CMD}'
         return cmd
 
 
@@ -70,7 +70,6 @@ class CGRunner:
 
     async def run_async(self):
         await self.run_async_cmd()
-        # TODO: parse separately
         parser = CGParser(self.run_conf.output_file)
         return parser.parse()
 
@@ -83,11 +82,12 @@ class CGAsyncRunner:
     @staticmethod
     async def run_queue(loop):
         tasks = set()
+        run_confs = get_run_confs()
         i = 0
-        while i < len(RUN_CONFS):
-            if len(tasks) >= config.N_THREADS:
+        while i < len(run_confs):
+            if len(tasks) >= Config.N_THREADS:
                 _done, tasks = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-            tasks.add(loop.create_task(CGAsyncRunner.run_conf(RUN_CONFS[i])))
+            tasks.add(loop.create_task(CGAsyncRunner.run_conf(run_confs[i])))
             i += 1
         await asyncio.wait(tasks)
 
@@ -99,11 +99,12 @@ class CGAsyncRunner:
         loop.close()
 
 
-RUN_CONFS = [
-    *[CGRunConf(d1=CGD1CacheConf(size=i)) for i in config.CACHE_PARAMS['D1']['SIZE']],
-    *[CGRunConf(d1=CGD1CacheConf(assoc=i)) for i in config.CACHE_PARAMS['D1']['ASSOC']],
-    *[CGRunConf(d1=CGD1CacheConf(line_size=i)) for i in config.CACHE_PARAMS['D1']['LINE_SIZE']],
-    *[CGRunConf(ll=CGLLCacheConf(size=i)) for i in config.CACHE_PARAMS['LL']['SIZE']],
-    *[CGRunConf(ll=CGLLCacheConf(assoc=i)) for i in config.CACHE_PARAMS['LL']['ASSOC']],
-    *[CGRunConf(ll=CGLLCacheConf(line_size=i)) for i in config.CACHE_PARAMS['LL']['LINE_SIZE']]
-]
+def get_run_confs():
+    return [
+        *[CGRunConf(d1=CGD1CacheConf(size=i)) for i in Config.CACHE_PARAMS['D1']['SIZE']],
+        *[CGRunConf(d1=CGD1CacheConf(assoc=i)) for i in Config.CACHE_PARAMS['D1']['ASSOC']],
+        *[CGRunConf(d1=CGD1CacheConf(line_size=i)) for i in Config.CACHE_PARAMS['D1']['LINE_SIZE']],
+        *[CGRunConf(ll=CGLLCacheConf(size=i)) for i in Config.CACHE_PARAMS['LL']['SIZE']],
+        *[CGRunConf(ll=CGLLCacheConf(assoc=i)) for i in Config.CACHE_PARAMS['LL']['ASSOC']],
+        *[CGRunConf(ll=CGLLCacheConf(line_size=i)) for i in Config.CACHE_PARAMS['LL']['LINE_SIZE']]
+    ]

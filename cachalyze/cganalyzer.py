@@ -1,7 +1,7 @@
 import re
 import numpy
 
-from cachalyze import config
+from cachalyze.config import Config
 
 
 class CGAnalyzer:
@@ -58,10 +58,10 @@ class CGGlobalAnalyzer:
 
     @staticmethod
     def filter_funcs(funcs):
-        if config.INCLUDE_FOLDER:
-            funcs = list(filter(lambda f: re.match(f'^{config.INCLUDE_FOLDER}', str(f)), funcs))
+        if Config.INCLUDE_DIR:
+            funcs = list(filter(lambda f: re.match(f'^{Config.INCLUDE_DIR}', str(f)), funcs))
         else:
-            if not config.INCLUDE_STANDARD_METHODS:
+            if not Config.INCLUDE_STANDARD_METHODS:
                 funcs = list(filter(lambda f: not str(f).startswith('???'), funcs))
 
         return funcs
@@ -81,7 +81,7 @@ class CGGlobalAnalyzer:
         total = sum(f.events.Dr + f.events.Dw for f in unfiltered_funcs)
         curr = 0
 
-        while curr / total * 100 < config.THRESHOLD:
+        while curr / total * 100 < Config.REGION_THRESHOLD:
             func = unfiltered_funcs.pop(0)
             filtered_funcs.append(func)
             curr += func.events.Dr
@@ -103,7 +103,7 @@ class CGGlobalAnalyzer:
         total = sum(l.events.Dr + l.events.Dw for l in unfiltered_lines)
         curr = 0
 
-        while curr / total * 100 < config.LINE_THRESHOLD:
+        while curr / total * 100 < Config.LINE_THRESHOLD:
             line = unfiltered_lines.pop(0)
             filtered_lines.append(line)
             curr += line.events.Dr
@@ -167,10 +167,10 @@ class CGGlobalAnalyzer:
         sorted_results = sorted(results.items(), reverse=True, key=lambda kv: kv[1])
 
         # PRINT CHANGE FACTORS
-        for k,v in sorted_results:
-            print(f'{k} & {round(v,5)} \\\\')
+        # for k,v in sorted_results:
+        #     print(f'{k} & {round(v,5)} \\\\')
 
-        return [r[0] for r in sorted_results]
+        return [r[0] for r in sorted_results if r[1] > 0.0]
 
     def _get_change_factor(self, cache, regions):
         regions = list(map(lambda r: CGAnalyzer.get_count_for_cache(cache, r.events), regions))

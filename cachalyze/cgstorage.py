@@ -1,25 +1,33 @@
 import os
 import re
 
-from cachalyze import config
+from cachalyze.config import Config
 from cachalyze.cgparser import CGParser
 from cachalyze.cgrunner import CGD1CacheConf, CGLLCacheConf
 
 
 class CGStorage:
+    __instance = None
     DEFAULT_D1_CONF = f'{CGD1CacheConf.DEFAULT_SIZE},{CGD1CacheConf.DEFAULT_ASSOC},{CGD1CacheConf.DEFAULT_LINE_SIZE}'
     DEFAULT_LL_CONF = f'{CGLLCacheConf.DEFAULT_SIZE},{CGLLCacheConf.DEFAULT_ASSOC},{CGLLCacheConf.DEFAULT_LINE_SIZE}'
-    prefix = config.OUT_PREFIX + r'\.' + config.PROGRAM_ALIAS + r'\.'
-    cache = {}
+
+    def __new__(cls, **kwargs):
+        if CGStorage.__instance is None:
+            CGStorage.__instance = object.__new__(cls)
+        return CGStorage.__instance
+
+    def __init__(self):
+        self.prefix = Config.OUT_PREFIX + r'\.' + Config.PROGRAM_ALIAS + r'\.'
+        self.cache = {}
 
     def parse(self, key):
         if key not in self.cache:
-            self.cache[key] = CGParser(f'{config.OUT_DIR}/{key}').parse()
+            self.cache[key] = CGParser(f'{Config.OUT_DIR}/{key}').parse()
             return self.cache[key]
         return self.cache[key]
 
     def get_regex(self, cache, param):
-        params = config.CACHE_PARAMS[cache][param]
+        params = Config.CACHE_PARAMS[cache][param]
         param_regex = "(" + "|".join(str(p) for p in params) + ")"
         regexes = {
             'D1': {
@@ -45,7 +53,7 @@ class CGStorage:
         regex = self.prefix + str(rc.d1.size) + ',' + str(rc.d1.assoc) + ',' + str(rc.d1.line_size) + r'\.' \
                 + str(rc.ll.size) + ',' + str(rc.ll.assoc) + ',' + str(rc.ll.line_size)
 
-        for f in os.listdir(config.OUT_DIR):
+        for f in os.listdir(Config.OUT_DIR):
             if re.match(regex, f):
                 return self.parse(f)
 
@@ -53,7 +61,7 @@ class CGStorage:
         outputs = []
         regex = self.get_regex(cache, param)
 
-        for f in os.listdir(config.OUT_DIR):
+        for f in os.listdir(Config.OUT_DIR):
             if re.match(regex, f):
                 outputs.append(self.parse(f))
 
@@ -61,7 +69,7 @@ class CGStorage:
 
     def get_for_program(self):
         outputs = []
-        for f in os.listdir(config.OUT_DIR):
+        for f in os.listdir(Config.OUT_DIR):
             if re.match(self.prefix, f):
                 outputs.append(self.parse(f))
 

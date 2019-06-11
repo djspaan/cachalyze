@@ -1,0 +1,39 @@
+cachalyze <command> [--options]
+
+-h --help
+-v --version
+
+commands:
+	runsim
+	plot
+
+runsim
+    -a --prog-alias=<alias>['']
+    -p --prog-cmd=<command>
+
+    --n-threads=<number>[2]
+    --out-folder=<folder>[.]
+    --out-prefix=<prefix>[callgrind.out]
+    --d1-size=8192,16384,32768,65536,131072,262144[32768]
+    --d1-assoc=2,4,8,16,32,64[8]
+    --d1-line-size=32,64,128,256[64]
+    --ll-size=2097152,4194304,8388608,16777216,33554432,67108864[8388608]
+    --ll-assoc=2,4,8,16,32,64[16]
+    --ll-line-size=32,64,128,256[64]
+
+
+plot
+    -a --prog-alias=''
+    -c --cache=(<D1>|<LL>)[D1]
+    -t --type={global,regions,region,region-lines}[global]
+    -r --region=(<region_number>|<region_name>)
+    -s --save-fig
+
+    --threshold=<number>[99.9]
+    --line-threshold=<number>[99.9]
+    --out-folder=<folder>[.]
+    --out-prefix=<prefix>[callgrind.out]
+    --include-folder=<folder>
+    --include-standard-methods=yes|no[no]
+
+
