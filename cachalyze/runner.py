@@ -1,9 +1,9 @@
-from cachalyze import config
-from cachalyze.cganalyzer import CGGlobalAnalyzer, CGAnalyzer, CGFuncMapper
-from cachalyze.cgparser import CGParser
-from cachalyze.cgplotter import CGPlotter
-from cachalyze.cgrunner import CGAsyncRunner, CGRunConf
-from cachalyze.cgstorage import CGStorage
+# from cachalyze import config
+# from cachalyze.cganalyzer import CGGlobalAnalyzer, CGAnalyzer, CGFuncMapper
+# from cachalyze.cgparser import CGParser
+# from cachalyze.cgplotter import CGPlotter
+# from cachalyze.cgrunner import CGAsyncRunner, CGRunConf
+# from cachalyze.cgstorage import CGStorage
 
 
 def run():
@@ -116,7 +116,6 @@ def run():
     #     print('{} {}'.format(func.events, func))
 
     # PRINT MOST CHANGING FUNCTIONS
-
 
     # PLOT MOST CHANGING FUNCTIONS
     # outputs = CGStorage().get_for_program()

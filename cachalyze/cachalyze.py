@@ -1,4 +1,4 @@
-from cachalyze.cganalyzer import CGGlobalAnalyzer, CGFuncMapper
+from cachalyze.cganalyzer import CGFuncMapper
 from cachalyze.cgplotter import CGPlotter
 from cachalyze.cgrunner import CGAsyncRunner
 from cachalyze.cgstorage import CGStorage
@@ -33,44 +33,51 @@ class RunSimCommand:
         CGAsyncRunner.run()
 
     def _add_args(self):
-        self.parser.add_argument('-a', '--prog-alias', help='Alias for the given program', action='store', dest='alias')
-        self.parser.add_argument('-p', '--prog-cmd', help='Command for the program', action='store', dest='cmd')
-        self.parser.add_argument('--n-threads', help='Number of threads to use for running simulations', type=int,
-                                 default=2, action='store', dest='n_threads')
-        self.parser.add_argument('--out-folder', help='Output folder to store the callgrind output files in',
-                                 default='.', action='store', dest='out_folder')
-        self.parser.add_argument('--out-prefix', help='Output prefix to prepend the callgrind output files with',
-                                 default='callgrind.out', action='store', dest='out_prefix')
-        self.parser.add_argument('--d1-sizes', help='First level data-cache sizes in bytes to use for the simulations,'
-                                                    ' where a size=2^n, in the format <size>,...,<size>',
-                                 action='store',
-                                 dest='d1_sizes',
-                                 default='8192,16384,32768,65536,131072,262144')
-        self.parser.add_argument('--d1-assocs',
-                                 help='First level data-cache set-associativities to use for the simulations,'
-                                      ' where a assoc=2^n, in the format <assoc>,...,<assoc> ',
-                                 action='store', dest='d1_assocs',
-                                 default='2,4,8,16,32,64')
-        self.parser.add_argument('--d1-line-sizes',
-                                 help='First level data-cache line sizes in bytes to use for the simulations,'
-                                      ' where a line_size=2^n, in the format <line_size>,...,<line_size> ',
-                                 action='store',
-                                 dest='d1_line_sizes',
-                                 default='32,64,128,256')
-        self.parser.add_argument('--ll-sizes', help='Last level cache sizes in bytes to use for the simulations,'
-                                                    ' where a size=2^n, in the format <size>,...,<size>',
-                                 action='store',
-                                 dest='ll_sizes',
-                                 default='2097152,4194304,8388608,16777216,33554432,67108864')
-        self.parser.add_argument('--ll-assocs', help='Last level cache set-associativities to use for the simulations,'
-                                                     ' where a assoc=2^n, in the format <assoc>,...,<assoc> ',
-                                 action='store', dest='ll_assocs',
-                                 default='2,4,8,16,32,64')
-        self.parser.add_argument('--ll-line-sizes',
-                                 help='Last level cache line sizes in bytes to use for the simulations,'
-                                      ' where a line_size=2^n, in the format <line_size>,...,<line_size> ',
-                                 action='store', dest='ll_line_sizes',
-                                 default='32,64,128,256')
+        optional_args = self.parser._action_groups.pop()
+        required_args = self.parser.add_argument_group('required arguments')
+        required_args.add_argument('-a', '--prog-alias', help='Alias for the given program', action='store',
+                                   dest='alias', required=True)
+        required_args.add_argument('-p', '--prog-cmd', help='Command for the program', action='store',
+                                   dest='cmd', required=True)
+        optional_args.add_argument('--n-threads', help='Number of threads to use for running simulations', type=int,
+                                   default=2, action='store', dest='n_threads')
+        optional_args.add_argument('--out-folder', help='Output folder to store the callgrind output files in',
+                                   default='.', action='store', dest='out_folder')
+        optional_args.add_argument('--out-prefix', help='Output prefix to prepend the callgrind output files with',
+                                   default='callgrind.out', action='store', dest='out_prefix')
+        optional_args.add_argument('--d1-sizes',
+                                   help='First level data-cache sizes in bytes to use for the simulations,'
+                                        ' where a size=2^n, in the format <size>,...,<size>',
+                                   action='store',
+                                   dest='d1_sizes',
+                                   default='8192,16384,32768,65536,131072,262144')
+        optional_args.add_argument('--d1-assocs',
+                                   help='First level data-cache set-associativities to use for the simulations,'
+                                        ' where a assoc=2^n, in the format <assoc>,...,<assoc> ',
+                                   action='store', dest='d1_assocs',
+                                   default='2,4,8,16,32,64')
+        optional_args.add_argument('--d1-line-sizes',
+                                   help='First level data-cache line sizes in bytes to use for the simulations,'
+                                        ' where a line_size=2^n, in the format <line_size>,...,<line_size> ',
+                                   action='store',
+                                   dest='d1_line_sizes',
+                                   default='32,64,128,256')
+        optional_args.add_argument('--ll-sizes', help='Last level cache sizes in bytes to use for the simulations,'
+                                                      ' where a size=2^n, in the format <size>,...,<size>',
+                                   action='store',
+                                   dest='ll_sizes',
+                                   default='2097152,4194304,8388608,16777216,33554432,67108864')
+        optional_args.add_argument('--ll-assocs',
+                                   help='Last level cache set-associativities to use for the simulations,'
+                                        ' where a assoc=2^n, in the format <assoc>,...,<assoc> ',
+                                   action='store', dest='ll_assocs',
+                                   default='2,4,8,16,32,64')
+        optional_args.add_argument('--ll-line-sizes',
+                                   help='Last level cache line sizes in bytes to use for the simulations,'
+                                        ' where a line_size=2^n, in the format <line_size>,...,<line_size> ',
+                                   action='store', dest='ll_line_sizes',
+                                   default='32,64,128,256')
+        self.parser._action_groups.append(optional_args)
 
 
 class PlotCommand:
@@ -96,7 +103,6 @@ class PlotCommand:
         Config.SAVE_FIGURE = args.save_figure
 
     def run(self):
-        # Fill the function mapping
         CGFuncMapper().fill_mapping(CGStorage().get_for_program()[0])
 
         if self.type == 'regions':
@@ -109,23 +115,31 @@ class PlotCommand:
             CGPlotter.plot_global(self.cache)
 
     def _add_args(self):
-        self.parser.add_argument('-a', '--prog-alias', help='Alias for the given program', action='store', dest='alias')
-        self.parser.add_argument('-c', '--cache', help='Level of cache to plot for', action='store', dest='cache', default='D1')
-        self.parser.add_argument('-t', '--type', help='Type of plot, one of {global,regions,region,region-lines}', action='store', dest='type', default='global')
-        self.parser.add_argument('-r', '--region', help='Region to plot, mandatory for type=region|region-lines', action='store', dest='region', type=int)
-        self.parser.add_argument('-s', '--save-figure', help='Whether to save the plot to an image', action='store_true', dest='save_figure')
-        self.parser.add_argument('--region-threshold', help='Percentual threshold to filter regions by', type=float,
-                                 default=99.9, action='store', dest='region_threshold')
-        self.parser.add_argument('--line-threshold', help='Percentual threshold to filter lines by', type=float,
-                                 default=99.9, action='store', dest='line_threshold')
-        self.parser.add_argument('--out-folder', help='Output folder to retrieve the callgrind output files from',
-                                 default='.', action='store', dest='out_folder')
-        self.parser.add_argument('--out-prefix', help='Output prefix of the prepended output files',
-                                 default='callgrind.out', action='store', dest='out_prefix')
-        self.parser.add_argument('--include-dir', help='Source code directory to only be included in the analysis',
-                                 default='', action='store', dest='include_dir')
-        self.parser.add_argument('--include-standard-methods', help='Whether to include standard C functions in the analysis',
-                                 action='store_true', dest='include_standard_methods')
+        optional_args = self.parser._action_groups.pop()
+        required_args = self.parser.add_argument_group('required arguments')
+        required_args.add_argument('-a', '--prog-alias', help='Alias for the given program', action='store',
+                                   dest='alias', required=True)
+        optional_args.add_argument('-c', '--cache', help='Level of cache to plot for', action='store',
+                                   dest='cache', default='D1')
+        optional_args.add_argument('-t', '--type', help='Type of plot, one of {global,regions,region,region-lines}',
+                                   action='store', dest='type', default='global')
+        optional_args.add_argument('-r', '--region', help='Region to plot, mandatory for type=region|region-lines',
+                                   action='store', dest='region', type=int)
+        optional_args.add_argument('-s', '--save-figure', help='Whether to save the plot to an image',
+                                   action='store_true', dest='save_figure')
+        optional_args.add_argument('--region-threshold', help='Relative threshold to filter regions by', type=float,
+                                   default=99.9, action='store', dest='region_threshold')
+        optional_args.add_argument('--line-threshold', help='Relative threshold to filter lines by', type=float,
+                                   default=99.9, action='store', dest='line_threshold')
+        optional_args.add_argument('--out-folder', help='Output folder to retrieve the callgrind output files from',
+                                   default='.', action='store', dest='out_folder')
+        optional_args.add_argument('--out-prefix', help='Output prefix of the prepended output files',
+                                   default='callgrind.out', action='store', dest='out_prefix')
+        optional_args.add_argument('--include-dir', help='Source code directory to only be included in the analysis',
+                                   default='', action='store', dest='include_dir')
+        optional_args.add_argument('--include-standard-methods', help='Whether to include standard C functions \
+                                  in the analysis', action='store_true', dest='include_standard_methods')
+        self.parser._action_groups.append(optional_args)
 
 
 class Cachalyze:
