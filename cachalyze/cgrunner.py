@@ -3,6 +3,7 @@ import os
 
 from cachalyze.config import Config
 from cachalyze.cgparser import CGParser
+from cachalyze.logger import Logger
 
 
 class CGCacheConf:
@@ -60,6 +61,7 @@ class CGRunner:
 
     def run(self):
         os.system(self.run_conf.get_cmd())
+        Logger.info(f'Simulation finished, writing results to: {self.run_conf.output_file}')
         parser = CGParser(self.run_conf.output_file)
         return parser.parse()
 
@@ -76,8 +78,9 @@ class CGRunner:
 
 class CGAsyncRunner:
     @staticmethod
-    async def run_conf(conf):
+    async def run_conf(conf, current=1, total=1):
         await CGRunner(conf).run_async()
+        Logger.info(f'Simulation finished, writing results to: {conf.output_file} ({current}/{total})')
 
     @staticmethod
     async def run_queue(loop):
@@ -87,7 +90,9 @@ class CGAsyncRunner:
         while i < len(run_confs):
             if len(tasks) >= Config.N_THREADS:
                 _done, tasks = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-            tasks.add(loop.create_task(CGAsyncRunner.run_conf(run_confs[i])))
+            Logger.info(f'Starting simulation with parameters: {run_confs[i].d1.get_cmd_option()} '
+                        f'{run_confs[i].ll.get_cmd_option()} ({i+1}/{len(run_confs)})')
+            tasks.add(loop.create_task(CGAsyncRunner.run_conf(run_confs[i], i+1, len(run_confs))))
             i += 1
         await asyncio.wait(tasks)
 

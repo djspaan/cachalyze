@@ -1,4 +1,6 @@
 class Config:
+    VERBOSE = False
+
     # RUN SIM
     PROGRAM_ALIAS = None
     PROGRAM_CMD = None

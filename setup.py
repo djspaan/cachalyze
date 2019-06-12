@@ -1,11 +1,7 @@
 import re
 from setuptools import setup
 
-version = re.search(
-    r"^__version__\s*=\s*'(.*)'",
-    open('cachalyze/cachalyze.py').read(),
-    re.M
-).group(1)
+version = re.search(r"^__version__\s*=\s*'(.*)'", open('cachalyze/cachalyze.py').read(), re.M).group(1)
 
 with open('README.md', 'rb') as f:
     long_descr = f.read().decode('utf-8')

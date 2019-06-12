@@ -4,6 +4,7 @@ import re
 from cachalyze.config import Config
 from cachalyze.cgparser import CGParser
 from cachalyze.cgrunner import CGD1CacheConf, CGLLCacheConf
+from cachalyze.logger import Logger
 
 
 class CGStorage:
@@ -72,5 +73,9 @@ class CGStorage:
         for f in os.listdir(Config.OUT_DIR):
             if re.match(self.prefix, f):
                 outputs.append(self.parse(f))
+
+        if not len(outputs):
+            Logger.error('No output files found. Make sure that the --out-folder and --out-prefix options are '
+                         'correctly set')
 
         return outputs

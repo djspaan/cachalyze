@@ -2,6 +2,7 @@ import re
 import numpy
 
 from cachalyze.config import Config
+from cachalyze.logger import Logger
 
 
 class CGAnalyzer:
@@ -78,6 +79,11 @@ class CGGlobalAnalyzer:
         filtered_funcs = []
         unfiltered_funcs = sorted(self.get_single_filtered_funcs(), reverse=True,
                                   key=lambda f: f.events.Dr + f.events.Dw)
+
+        if len(unfiltered_funcs) == 0:
+            Logger.error('There are no regions to threshold, make sure that the '
+                         'program under review has at least 1 function/method')
+
         total = sum(f.events.Dr + f.events.Dw for f in unfiltered_funcs)
         curr = 0
 
