@@ -2,13 +2,16 @@ from cachalyze.cgcontainers import CGOutput, CGFile, CGFunction, CGLine, CGEvent
 
 
 class CGParser:
-    _curr_obj = None
-    _curr_file = None
-    _curr_func = None
-    _curr_line = None
-
     def __init__(self, path):
+        self._curr_obj = CGObject('undefined')
+        self._curr_file = CGFile('undefined')
+        self._curr_obj.files.append(self._curr_file)
+        self._curr_func = CGFunction(self._curr_file, 'undefined')
+        self._curr_file.add_func(self._curr_func)
+        self._curr_line = None
         self.output = CGOutput()
+        self.output.objects.append(self._curr_obj)
+        self.output.files.append(self._curr_file)
         self.path = path
 
     def _read_count_line(self, line):

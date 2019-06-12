@@ -29,6 +29,9 @@ class RunSimCommand:
         Config.N_THREADS = args.n_threads
         Config.OUT_DIR = args.out_dir
         Config.OUT_PREFIX = args.out_prefix
+        for ls in args.d1_line_sizes.split(',') + args.ll_line_sizes.split(','):
+            if int(ls) < 32:
+                Logger.error('Lines sizes can not be smaller than the register size (32B)')
         Config.CACHE_PARAMS['D1']['SIZE'] = [self.is_power2(int(size)) for size in args.d1_sizes.split(',')]
         Config.CACHE_PARAMS['D1']['ASSOC'] = [self.is_power2(int(assoc)) for assoc in args.d1_assocs.split(',')]
         Config.CACHE_PARAMS['D1']['LINE_SIZE'] = [self.is_power2(int(ls)) for ls in args.d1_line_sizes.split(',')]
