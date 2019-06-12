@@ -95,6 +95,7 @@ class PlotCommand:
         self.cache = args.cache
         self.type = args.type
         self.region = args.region
+        Config.VERBOSE = args.verbose
         Config.PROGRAM_ALIAS = args.alias
         Config.REGION_THRESHOLD = args.region_threshold
         Config.LINE_THRESHOLD = args.line_threshold
@@ -119,13 +120,15 @@ class PlotCommand:
     def _add_args(self):
         optional_args = self.parser._action_groups.pop()
         required_args = self.parser.add_argument_group('required arguments')
+        optional_args.add_argument('-v', '--verbose', help='whether to print run-time information', action='store_true',
+                                   dest='verbose')
         required_args.add_argument('-a', '--prog-alias', help='alias for the given program', action='store',
                                    dest='alias', required=True)
         optional_args.add_argument('-c', '--cache', help='level of cache to plot for', action='store',
                                    dest='cache', default='D1', choices=['D1', 'LL'])
         optional_args.add_argument('-s', '--save-figure', help='whether to save the plot to an image',
                                    action='store_true', dest='save_figure')
-        optional_args.add_argument('-t', '--type', help='type of plot, one of {global,regions,region,region-lines}',
+        optional_args.add_argument('-t', '--type', help='type of plot',
                                    action='store', dest='type', default='global',
                                    choices=['global', 'regions', 'region', 'region-lines'])
         optional_args.add_argument('-r', '--region', help='region to plot, mandatory for type=region|region-lines',
