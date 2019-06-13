@@ -30,14 +30,16 @@ class RunSimCommand:
         Config.OUT_DIR = args.out_dir
         Config.OUT_PREFIX = args.out_prefix
         for ls in args.d1_line_sizes.split(',') + args.ll_line_sizes.split(','):
-            if int(ls) < 32:
-                Logger.error('Lines sizes can not be smaller than the register size (32B)')
-        Config.CACHE_PARAMS['D1']['SIZE'] = [self.is_power2(int(size)) for size in args.d1_sizes.split(',')]
-        Config.CACHE_PARAMS['D1']['ASSOC'] = [self.is_power2(int(assoc)) for assoc in args.d1_assocs.split(',')]
-        Config.CACHE_PARAMS['D1']['LINE_SIZE'] = [self.is_power2(int(ls)) for ls in args.d1_line_sizes.split(',')]
-        Config.CACHE_PARAMS['LL']['SIZE'] = [self.is_power2(int(size)) for size in args.ll_sizes.split(',')]
-        Config.CACHE_PARAMS['LL']['ASSOC'] = [self.is_power2(int(assoc)) for assoc in args.ll_assocs.split(',')]
-        Config.CACHE_PARAMS['LL']['LINE_SIZE'] = [self.is_power2(int(ls)) for ls in args.ll_line_sizes.split(',')]
+            if int(ls) < Config.REGISTER_SIZE:
+                Logger.error(f'Line sizes can not be smaller than the register size ({Config.REGISTER_SIZE}B)')
+        if not args.d1_all:
+            Config.CACHE_PARAMS['D1']['SIZE'] = [self.is_power2(int(size)) for size in args.d1_sizes.split(',')]
+            Config.CACHE_PARAMS['D1']['ASSOC'] = [self.is_power2(int(assoc)) for assoc in args.d1_assocs.split(',')]
+            Config.CACHE_PARAMS['D1']['LINE_SIZE'] = [self.is_power2(int(ls)) for ls in args.d1_line_sizes.split(',')]
+        if not args.ll_all:
+            Config.CACHE_PARAMS['LL']['SIZE'] = [self.is_power2(int(size)) for size in args.ll_sizes.split(',')]
+            Config.CACHE_PARAMS['LL']['ASSOC'] = [self.is_power2(int(assoc)) for assoc in args.ll_assocs.split(',')]
+            Config.CACHE_PARAMS['LL']['LINE_SIZE'] = [self.is_power2(int(ls)) for ls in args.ll_line_sizes.split(',')]
 
     def run(self):
         CGAsyncRunner.run()
@@ -55,12 +57,12 @@ class RunSimCommand:
                                    default='.', action='store', dest='out_dir')
         optional_args.add_argument('--out-prefix', help='output prefix to prepend the callgrind output files with',
                                    default='callgrind.out', action='store', dest='out_prefix')
+        optional_args.add_argument('--d1-all', help='simulate the D1 cache with the complete parameter space',
+                                   action='store_true', dest='d1_all')
         optional_args.add_argument('--d1-sizes',
                                    help='first level data-cache sizes in bytes to use for the simulations,'
                                         ' where a size=2^n, in the format <size>,...,<size>',
-                                   action='store',
-                                   dest='d1_sizes',
-                                   default='32768')
+                                   action='store', dest='d1_sizes', default='32768')
         optional_args.add_argument('--d1-assocs',
                                    help='first level data-cache set-associativities to use for the simulations,'
                                         ' where a assoc=2^n, in the format <assoc>,...,<assoc> ',
@@ -68,7 +70,9 @@ class RunSimCommand:
         optional_args.add_argument('--d1-line-sizes',
                                    help='first level data-cache line sizes in bytes to use for the simulations,'
                                         ' where a line_size=2^n, in the format <line_size>,...,<line_size> ',
-                                   action='store', dest='d1_line_sizes', default='32,64,128,256')
+                                   action='store', dest='d1_line_sizes', default='64')
+        optional_args.add_argument('--ll-all', help='simulate the LL cache with the complete parameter space',
+                                   action='store_true', dest='ll_all')
         optional_args.add_argument('--ll-sizes', help='last level cache sizes in bytes to use for the simulations,'
                                                       ' where a size=2^n, in the format <size>,...,<size>',
                                    action='store', dest='ll_sizes',
@@ -146,6 +150,10 @@ class PlotCommand:
                                    default='callgrind.out', action='store', dest='out_prefix')
         optional_args.add_argument('--include-dir', help='source code directory to only be included in the analysis',
                                    default='', action='store', dest='include_dir')
+        optional_args.add_argument('--use-backend', help='graphics backend to use for the generation of plots, '
+                                                         'note that agg does only save to file, so be sure to add the '
+                                                         '-s flag',
+                                   default='tkinter', action='store', dest='backend', choices=['tkinter', 'agg'])
         optional_args.add_argument('--include-standard-methods', help='whether to include standard C functions \
                                   in the analysis', action='store_true', dest='include_standard_methods')
         self.parser._action_groups.append(optional_args)

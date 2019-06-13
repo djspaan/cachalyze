@@ -15,7 +15,7 @@ class CGParser:
         self.path = path
 
     def _read_count_line(self, line):
-        return [int(i) for i in line.replace('.', '0').split(' ')]
+        return [int(i) for i in line.replace('.', '0').split()]
 
     def cg_out_summary_line(self, line):
         counts = self._read_count_line(line)

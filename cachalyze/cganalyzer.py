@@ -87,6 +87,9 @@ class CGGlobalAnalyzer:
         total = sum(f.events.Dr + f.events.Dw for f in unfiltered_funcs)
         curr = 0
 
+        if total == 0:
+            Logger.error(f'No events counted for the available regions ({len(unfiltered_funcs)})')
+
         while curr / total * 100 < Config.REGION_THRESHOLD:
             func = unfiltered_funcs.pop(0)
             filtered_funcs.append(func)

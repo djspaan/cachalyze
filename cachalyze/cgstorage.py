@@ -24,7 +24,6 @@ class CGStorage:
     def parse(self, key):
         if key not in self.cache:
             self.cache[key] = CGParser(f'{Config.OUT_DIR}/{key}').parse()
-            return self.cache[key]
         return self.cache[key]
 
     def get_regex(self, cache, param):

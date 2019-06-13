@@ -60,8 +60,10 @@ class CGRunner:
         self.run_conf = run_conf
 
     def run(self):
+        Logger.info(f'Starting simulation with parameters: {self.run_conf.d1.get_cmd_option()} '
+                    f'{self.run_conf.ll.get_cmd_option()} (1/1)')
         os.system(self.run_conf.get_cmd())
-        Logger.info(f'Simulation finished, writing results to: {self.run_conf.output_file}')
+        Logger.info(f'Simulation finished, writing results to: {self.run_conf.output_file} (1/1)')
         parser = CGParser(self.run_conf.output_file)
         return parser.parse()
 
@@ -79,6 +81,8 @@ class CGRunner:
 class CGAsyncRunner:
     @staticmethod
     async def run_conf(conf, current=1, total=1):
+        Logger.info(f'Starting simulation with parameters: {conf.d1.get_cmd_option()} '
+                    f'{conf.ll.get_cmd_option()} ({current}/{total})')
         await CGRunner(conf).run_async()
         Logger.info(f'Simulation finished, writing results to: {conf.output_file} ({current}/{total})')
 
@@ -86,13 +90,12 @@ class CGAsyncRunner:
     async def run_queue(loop):
         tasks = set()
         run_confs = get_run_confs()
+        print(len(run_confs))
         i = 0
         while i < len(run_confs):
             if len(tasks) >= Config.N_THREADS:
                 _done, tasks = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-            Logger.info(f'Starting simulation with parameters: {run_confs[i].d1.get_cmd_option()} '
-                        f'{run_confs[i].ll.get_cmd_option()} ({i+1}/{len(run_confs)})')
-            tasks.add(loop.create_task(CGAsyncRunner.run_conf(run_confs[i], i+1, len(run_confs))))
+            tasks.add(loop.create_task(CGAsyncRunner.run_conf(run_confs[i], i + 1, len(run_confs))))
             i += 1
         await asyncio.wait(tasks)
 
@@ -105,11 +108,16 @@ class CGAsyncRunner:
 
 
 def get_run_confs():
-    return [
+    """
+    Get unique run configurations
+
+    :return: [CGRunConf]
+    """
+    return [c for c in {c.output_file: c for c in [
         *[CGRunConf(d1=CGD1CacheConf(size=i)) for i in Config.CACHE_PARAMS['D1']['SIZE']],
         *[CGRunConf(d1=CGD1CacheConf(assoc=i)) for i in Config.CACHE_PARAMS['D1']['ASSOC']],
         *[CGRunConf(d1=CGD1CacheConf(line_size=i)) for i in Config.CACHE_PARAMS['D1']['LINE_SIZE']],
         *[CGRunConf(ll=CGLLCacheConf(size=i)) for i in Config.CACHE_PARAMS['LL']['SIZE']],
         *[CGRunConf(ll=CGLLCacheConf(assoc=i)) for i in Config.CACHE_PARAMS['LL']['ASSOC']],
         *[CGRunConf(ll=CGLLCacheConf(line_size=i)) for i in Config.CACHE_PARAMS['LL']['LINE_SIZE']]
-    ]
+    ]}.values()]

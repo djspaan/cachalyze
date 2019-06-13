@@ -5,6 +5,7 @@ class Config:
     PROGRAM_ALIAS = None
     PROGRAM_CMD = None
     N_THREADS = 2
+    REGISTER_SIZE = 32
     CACHE_PARAMS = {
         'D1': {
             'SIZE': [8192, 16384, 32768, 65536, 131072, 262144],
@@ -17,6 +18,9 @@ class Config:
             'LINE_SIZE': [32, 64, 128, 256]
         }
     }
+
+    # PLOT
+    GRAPHICS_BACKEND = 'tkinter'
 
     # ANALYZE
     REGION_THRESHOLD = 99.9

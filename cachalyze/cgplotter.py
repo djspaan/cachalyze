@@ -1,11 +1,16 @@
 from math import floor
-import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
-
 from cachalyze.config import Config
 from cachalyze.cganalyzer import CGAnalyzer, CGGlobalAnalyzer
 from cachalyze.cgstorage import CGStorage
 from cachalyze.cganalyzer import CGFuncMapper
+
+import matplotlib
+
+if Config.GRAPHICS_BACKEND != 'tkinter':
+    matplotlib.use(Config.GRAPHICS_BACKEND)
+
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 
 
 class CGPlot:
@@ -14,6 +19,7 @@ class CGPlot:
     def __init__(self, cache):
         self.cache = cache
         self.min_miss_rates = self.max_miss_rates = []
+
         self.fig, self.axs = plt.subplots(1, 3, figsize=(15, 4))
 
     def plot(self):
