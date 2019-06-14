@@ -1,14 +1,14 @@
 # from cachalyze import config
-# from cachalyze.cganalyzer import CGGlobalAnalyzer, CGAnalyzer, CGFuncMapper
+from cachalyze.cganalyzer import CGGlobalAnalyzer, CGAnalyzer, CGFuncMapper
 # from cachalyze.cgparser import CGParser
-# from cachalyze.cgplotter import CGPlotter
-# from cachalyze.cgrunner import CGAsyncRunner, CGRunConf
-# from cachalyze.cgstorage import CGStorage
+from cachalyze.cgplotter import CGPlotter
+from cachalyze.cgrunner import CGAsyncRunner, CGRunConf
+from cachalyze.cgstorage import CGStorage
 
 
 def run():
     pass
-    # CGFuncMapper().fill_mapping(CGStorage().get_for_run_conf(CGRunConf()))
+    CGFuncMapper().fill_mapping(CGStorage().get_for_run_conf(CGRunConf()))
 
     # PLOT STATS PER LINE
     # func = output.get_func(CGFuncMapper().get_func(67))
@@ -117,12 +117,15 @@ def run():
 
     # PRINT MOST CHANGING FUNCTIONS
 
-    # PLOT MOST CHANGING FUNCTIONS
+    # PLOT MOST CHANGING (AND FILTER) FUNCTIONS
     # outputs = CGStorage().get_for_program()
     # analyser = CGGlobalAnalyzer(outputs)
     # thres_funcs = analyser.get_thresholded_funcs()
     # ch_funcs = analyser.get_functions_by_change('D1', thres_funcs)
-    # CGPlotter.plot_funcs('D1', ch_funcs[:10])
+    # fil_ch_funcs = analyser.filter_callees(outputs[0], ch_funcs)
+    # for f in fil_ch_funcs:
+    #     print(f'{CGFuncMapper().get_mapping(f)} - {f}')
+    # CGPlotter.plot_funcs('D1', fil_ch_funcs)
 
     # PRINT LINES WITH EVENTS
     # print(file.path)

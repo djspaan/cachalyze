@@ -145,7 +145,29 @@ class CGGlobalAnalyzer:
         # for k,v in sorted_results:
         #     print(f'{CGFuncMapper().get_mapping(k)} & {round(v,5)} \\\\')
 
-        return [r[0] for r in sorted_results]
+        return dict(sorted_results)
+
+    def filter_callees(self, output, ch_funcs):
+        pools = []
+        filtered_funcs = []
+
+        for ch_f in ch_funcs.keys():
+            func = output.get_func(ch_f)
+            for c in func.callees:
+                if c in ch_funcs:
+                    self.add_to_pools(ch_f, c, pools)
+
+        for p in pools:
+            filtered_funcs.append(max(p, key=lambda f: ch_funcs[f]))
+
+        return filtered_funcs
+
+    def add_to_pools(self, elem, elem2, pools):
+        for p in pools:
+            if elem in p or elem2 in p:
+                p.update([elem, elem2])
+                return pools
+        pools.append({elem, elem2})
 
     def get_lines_by_change_for_func(self, cache, func, pre_def_lines=[]):
         """

@@ -8,6 +8,7 @@ from cachalyze.logger import Logger
 
 
 class CGStorage:
+    _cache = {}
     __instance = None
     DEFAULT_D1_CONF = f'{CGD1CacheConf.DEFAULT_SIZE},{CGD1CacheConf.DEFAULT_ASSOC},{CGD1CacheConf.DEFAULT_LINE_SIZE}'
     DEFAULT_LL_CONF = f'{CGLLCacheConf.DEFAULT_SIZE},{CGLLCacheConf.DEFAULT_ASSOC},{CGLLCacheConf.DEFAULT_LINE_SIZE}'
@@ -19,12 +20,12 @@ class CGStorage:
 
     def __init__(self):
         self.prefix = Config.OUT_PREFIX + r'\.' + Config.PROGRAM_ALIAS + r'\.'
-        self.cache = {}
 
     def parse(self, key):
-        if key not in self.cache:
-            self.cache[key] = CGParser(f'{Config.OUT_DIR}/{key}').parse()
-        return self.cache[key]
+        if key not in self._cache:
+            self._cache[key] = CGParser(f'{Config.OUT_DIR}/{key}').parse()
+            Logger.info(f'Successfully parsed output file {Config.OUT_DIR}/{key}')
+        return self._cache[key]
 
     def get_regex(self, cache, param):
         params = Config.CACHE_PARAMS[cache][param]

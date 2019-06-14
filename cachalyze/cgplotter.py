@@ -292,10 +292,11 @@ class CGPlotter:
         outputs = CGStorage().get_for_program()
         analyser = CGGlobalAnalyzer(outputs)
         thres_funcs = analyser.get_thresholded_funcs()
-        funcs = analyser.get_functions_by_change(cache, thres_funcs)
-        for f in funcs:
+        ch_funcs = analyser.get_functions_by_change(cache, thres_funcs)
+        fil_ch_funcs = analyser.filter_callees(outputs[0], ch_funcs)
+        for f in fil_ch_funcs:
             print(f'{CGFuncMapper().get_mapping(f)} - {f}')
-        CGPlotter.plot_funcs(cache, funcs)
+        CGPlotter.plot_funcs(cache, fil_ch_funcs)
 
     @staticmethod
     def plot_lines(cache, func, lines):

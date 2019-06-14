@@ -9,6 +9,7 @@ class CGParser:
         self._curr_func = CGFunction(self._curr_file, 'undefined')
         self._curr_file.add_func(self._curr_func)
         self._curr_line = None
+        self._curr_cfile = CGFile('undefined')
         self.output = CGOutput()
         self.output.objects.append(self._curr_obj)
         self.output.files.append(self._curr_file)
@@ -31,6 +32,12 @@ class CGParser:
         func = CGFunction(self._curr_file, line)
         func = self._curr_file.add_func(func)
         self._curr_func = func
+
+    def cg_out_cfn_line(self, line):
+        self._curr_func.callees.add(str(CGFunction(self._curr_cfile, line)))
+
+    def cg_out_cfi_line(self, line):
+        self._curr_cfile = CGFile(line)
 
     def cg_out_file_line(self, line):
         file = CGFile(line)
@@ -75,11 +82,11 @@ class CGParser:
         elif line.startswith('fe='):
             pass
         elif line.startswith('cfn='):
-            pass
+            self.cg_out_cfn_line(line[4:])
         elif line.startswith('cob='):
             pass
         elif line.startswith('cfi='):
-            pass
+            self.cg_out_cfi_line(line[4:])
         elif line.startswith('desc: '):
             self.cg_out_desc_line(line[5:])
         elif line.startswith('cmd: '):
@@ -108,3 +115,4 @@ class CGParser:
         file.close()
 
         return self.output
+

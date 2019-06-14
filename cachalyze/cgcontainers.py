@@ -108,6 +108,7 @@ class CGFunction:
         self.file = file
         self.name = name
         self.lines = {}
+        self.callees = set()
         self.events = CGEvents()
 
     def get_formatted_name(self) -> str:
@@ -150,8 +151,30 @@ class CGEvents:
         self.DLmw = DLmw
 
     def add(self, events):
-        for event in self.__dict__.keys():
-            self.__dict__[event] += events.__dict__[event]
+        self.Ir += events.Ir
+        self.Dr += events.Dr
+        self.Dw += events.Dw
+        self.I1mr += events.I1mr
+        self.D1mr += events.D1mr
+        self.D1mw += events.D1mw
+        self.ILmr += events.ILmr
+        self.DLmr += events.DLmr
+        self.DLmw += events.DLmw
+
+    # def add(self, events):
+    #     self.Ir = self.Ir + events.Ir
+    #     self.Dr = self.Dr + events.Dr
+    #     self.Dw = self.Dw + events.Dw
+    #     self.I1mr = self.I1mr + events.I1mr
+    #     self.D1mr = self.D1mr + events.D1mr
+    #     self.D1mw = self.D1mw + events.D1mw
+    #     self.ILmr = self.ILmr + events.ILmr
+    #     self.DLmr = self.DLmr + events.DLmr
+    #     self.DLmw = self.DLmw + events.DLmw
+
+    # def add(self, events):
+    #     for event in self.__dict__.keys():
+    #         self.__dict__[event] += events.__dict__[event]
 
     def format(self):
         return '{:,} & {:,} & {:,} & {:,} & {:,} & {:,} & {:,} & {:,} & {:,}' \

@@ -1,3 +1,4 @@
+from cachalyze import runner
 from cachalyze.cganalyzer import CGFuncMapper
 from cachalyze.cgplotter import CGPlotter
 from cachalyze.cgrunner import CGAsyncRunner
@@ -16,6 +17,13 @@ class RunSimCommand:
         self.parser = argparse.ArgumentParser(description='Run simulations for a given program')
         self._add_args()
 
+    def _validate(self, args):
+        if len(args.program) == 0:
+            Logger.error('Please enter a program')
+        for ls in args.d1_line_sizes.split(',') + args.ll_line_sizes.split(','):
+            if int(ls) < Config.REGISTER_SIZE:
+                Logger.error(f'Line sizes can not be smaller than the register size ({Config.REGISTER_SIZE}B)')
+
     def is_power2(self, num):
         if num != 0 and ((num & (num - 1)) == 0):
             return num
@@ -23,15 +31,15 @@ class RunSimCommand:
 
     def set_config(self):
         args = self.parser.parse_args(sys.argv[2:])
+        self._validate(args)
+
         Config.VERBOSE = args.verbose
         Config.PROGRAM_CMD = ' '.join(args.program)
         Config.PROGRAM_ALIAS = args.alias or args.program[0]
         Config.N_THREADS = args.n_threads
         Config.OUT_DIR = args.out_dir
         Config.OUT_PREFIX = args.out_prefix
-        for ls in args.d1_line_sizes.split(',') + args.ll_line_sizes.split(','):
-            if int(ls) < Config.REGISTER_SIZE:
-                Logger.error(f'Line sizes can not be smaller than the register size ({Config.REGISTER_SIZE}B)')
+
         if not args.d1_all:
             Config.CACHE_PARAMS['D1']['SIZE'] = [self.is_power2(int(size)) for size in args.d1_sizes.split(',')]
             Config.CACHE_PARAMS['D1']['ASSOC'] = [self.is_power2(int(assoc)) for assoc in args.d1_assocs.split(',')]
@@ -176,6 +184,13 @@ Available commands:
             parser.print_help()
             exit(1)
         getattr(self, args.command)()
+
+    def test(self):
+        Config.OUT_DIR = 'out'
+        Config.OUT_PREFIX = 'cgrunner.out'
+        Config.PROGRAM_ALIAS = 'test'
+        Config.INCLUDE_DIR = '/home/dennisspaan/Workspace/test/libs'
+        runner.run()
 
     def runsim(self):
         command = RunSimCommand()
