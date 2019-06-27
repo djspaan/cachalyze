@@ -62,18 +62,27 @@ class CGRunner:
     def run(self):
         Logger.info(f'Starting simulation with parameters: {self.run_conf.d1.get_cmd_option()} '
                     f'{self.run_conf.ll.get_cmd_option()} (1/1)')
-        os.system(self.run_conf.get_cmd())
-        Logger.info(f'Simulation finished, writing results to: {self.run_conf.output_file} (1/1)')
+        if not os.path.isfile(self.run_conf.output_file):
+            os.system(self.run_conf.get_cmd())
+            Logger.info(f'Simulation finished, writing results to: {self.run_conf.output_file} (1/1)')
+        else:
+            Logger.warn(f'File {self.run_conf.output_file} already exists, skipping simulation')
         parser = CGParser(self.run_conf.output_file)
         return parser.parse()
 
-    async def run_async_cmd(self):
-        proc = await asyncio.create_subprocess_shell(
-            self.run_conf.get_cmd(), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-        await proc.communicate()
+    async def run_async_cmd(self, current, total):
+        if not os.path.isfile(self.run_conf.output_file):
+            Logger.info(f'Starting simulation with parameters: {self.run_conf.d1.get_cmd_option()} '
+                        f'{self.run_conf.ll.get_cmd_option()} ({current}/{total})')
+            proc = await asyncio.create_subprocess_shell(
+                self.run_conf.get_cmd(), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            await proc.communicate()
+            Logger.info(f'Simulation finished, writing results to: {self.run_conf.output_file} ({current}/{total})')
+        else:
+            Logger.warn(f'File {self.run_conf.output_file} already exists, skipping simulation')
 
-    async def run_async(self):
-        await self.run_async_cmd()
+    async def run_async(self, current, total):
+        await self.run_async_cmd(current, total)
         parser = CGParser(self.run_conf.output_file)
         return parser.parse()
 
@@ -81,16 +90,12 @@ class CGRunner:
 class CGAsyncRunner:
     @staticmethod
     async def run_conf(conf, current=1, total=1):
-        Logger.info(f'Starting simulation with parameters: {conf.d1.get_cmd_option()} '
-                    f'{conf.ll.get_cmd_option()} ({current}/{total})')
-        await CGRunner(conf).run_async()
-        Logger.info(f'Simulation finished, writing results to: {conf.output_file} ({current}/{total})')
+        await CGRunner(conf).run_async(current, total)
 
     @staticmethod
     async def run_queue(loop):
         tasks = set()
         run_confs = get_run_confs()
-        print(len(run_confs))
         i = 0
         while i < len(run_confs):
             if len(tasks) >= Config.N_THREADS:
@@ -121,3 +126,19 @@ def get_run_confs():
         *[CGRunConf(ll=CGLLCacheConf(assoc=i)) for i in Config.CACHE_PARAMS['LL']['ASSOC']],
         *[CGRunConf(ll=CGLLCacheConf(line_size=i)) for i in Config.CACHE_PARAMS['LL']['LINE_SIZE']]
     ]}.values()]
+
+
+def get_dse_run_confs():
+    """
+    Get unique run configurations for design space exploration
+
+    :return: [CGRunConf]
+    """
+    confs = []
+
+    for size in Config.CACHE_PARAMS['LL']['SIZE']:
+        for assoc in Config.CACHE_PARAMS['LL']['ASSOC']:
+            for line_size in Config.CACHE_PARAMS['LL']['LINE_SIZE']:
+                confs.append(CGRunConf(ll=CGLLCacheConf(size=size, assoc=assoc, line_size=line_size)))
+
+    return confs

@@ -1,14 +1,16 @@
-# from cachalyze import config
 from cachalyze.cganalyzer import CGGlobalAnalyzer, CGAnalyzer, CGFuncMapper
 # from cachalyze.cgparser import CGParser
 from cachalyze.cgplotter import CGPlotter
-from cachalyze.cgrunner import CGAsyncRunner, CGRunConf
+from cachalyze.cgrunner import CGAsyncRunner, CGRunConf, CGRunner
 from cachalyze.cgstorage import CGStorage
+from cachalyze.config import Config
 
 
 def run():
     pass
-    CGFuncMapper().fill_mapping(CGStorage().get_for_run_conf(CGRunConf()))
+    # CGFuncMapper().fill_mapping(CGStorage().get_for_run_conf(CGRunConf()))
+
+    # CGAsyncRunner.run()
 
     # PLOT STATS PER LINE
     # func = output.get_func(CGFuncMapper().get_func(67))

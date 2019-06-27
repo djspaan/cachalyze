@@ -1,4 +1,6 @@
 from math import floor
+
+from cachalyze import cgrunner
 from cachalyze.config import Config
 from cachalyze.cganalyzer import CGAnalyzer, CGGlobalAnalyzer
 from cachalyze.cgstorage import CGStorage
@@ -289,11 +291,11 @@ class CGPlotter:
 
     @staticmethod
     def plot_thresholded_most_changing_funcs(cache):
-        outputs = CGStorage().get_for_program()
+        outputs = CGStorage().get_for_run_confs(cgrunner.get_run_confs())
         analyser = CGGlobalAnalyzer(outputs)
         thres_funcs = analyser.get_thresholded_funcs()
         ch_funcs = analyser.get_functions_by_change(cache, thres_funcs)
-        fil_ch_funcs = analyser.filter_callees(outputs[0], ch_funcs)
+        fil_ch_funcs = analyser.filter_callees(outputs[0], ch_funcs)[:10]
         for f in fil_ch_funcs:
             print(f'{CGFuncMapper().get_mapping(f)} - {f}')
         CGPlotter.plot_funcs(cache, fil_ch_funcs)
@@ -304,12 +306,12 @@ class CGPlotter:
 
     @staticmethod
     def plot_thresholded_most_changing_lines_for_func(cache, func_mapping):
-        outputs = CGStorage().get_for_program()
+        outputs = CGStorage().get_for_run_confs(cgrunner.get_run_confs())
         analyser = CGGlobalAnalyzer(outputs)
         func = outputs[0].get_func(CGFuncMapper().get_func(func_mapping))
         pre_def_lines = analyser.get_thresholded_lines_for_func(func)
         pre_def_lines = [l.number for l in pre_def_lines]
-        ch_lines = analyser.get_lines_by_change_for_func(cache, func, pre_def_lines)
+        ch_lines = analyser.get_lines_by_change_for_func(cache, func, pre_def_lines)[:10]
         CGPlotter.plot_lines(cache, func, ch_lines)
 
     @staticmethod

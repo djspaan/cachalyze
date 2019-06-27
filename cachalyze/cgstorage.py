@@ -58,6 +58,12 @@ class CGStorage:
             if re.match(regex, f):
                 return self.parse(f)
 
+    def get_for_run_confs(self, confs):
+        outputs = []
+        for c in confs:
+            outputs.append(self.get_for_run_conf(c))
+        return outputs
+
     def get_for_param(self, cache, param):
         outputs = []
         regex = self.get_regex(cache, param)

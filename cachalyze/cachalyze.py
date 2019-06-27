@@ -1,12 +1,12 @@
 from cachalyze import runner
 from cachalyze.cganalyzer import CGFuncMapper
 from cachalyze.cgplotter import CGPlotter
-from cachalyze.cgrunner import CGAsyncRunner
+from cachalyze.cgrunner import CGAsyncRunner, CGRunConf, CGD1CacheConf
 from cachalyze.cgstorage import CGStorage
 from cachalyze.config import Config
 from cachalyze.logger import Logger
 
-__version__ = '0.8.1'
+__version__ = '0.9.0'
 
 import sys
 import argparse
@@ -121,7 +121,7 @@ class PlotCommand:
         Config.SAVE_FIGURE = args.save_figure
 
     def run(self):
-        CGFuncMapper().fill_mapping(CGStorage().get_for_program()[0])
+        CGFuncMapper().fill_mapping(CGStorage().get_for_run_conf(CGRunConf()))
 
         if self.type == 'regions':
             CGPlotter.plot_thresholded_most_changing_funcs(self.cache)
@@ -186,6 +186,9 @@ Available commands:
         getattr(self, args.command)()
 
     def test(self):
+        Config.VERBOSE = True
+        Config.PROGRAM_CMD = '/home/dennisspaan/Workspace/test/bld/app/test -s -c /home/dennisspaan/Workspace/test/bld/app/test.xml'
+        Config.N_THREADS = 4
         Config.OUT_DIR = 'out'
         Config.OUT_PREFIX = 'cgrunner.out'
         Config.PROGRAM_ALIAS = 'test'
