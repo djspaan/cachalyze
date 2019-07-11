@@ -1,16 +1,14 @@
-from cachalyze.cganalyzer import CGGlobalAnalyzer, CGAnalyzer, CGFuncMapper
+# from cachalyze import config
+from cachalyze.cganalyzers import CGGlobalAnalyzer, CGAnalyzer, CGFuncMapper
 # from cachalyze.cgparser import CGParser
-from cachalyze.cgplotter import CGPlotter
-from cachalyze.cgrunner import CGAsyncRunner, CGRunConf, CGRunner
+from cachalyze.cgplotters import CGPlotter
+from cachalyze.cgrunners import CGAsyncRunner, CGRunConf
 from cachalyze.cgstorage import CGStorage
-from cachalyze.config import Config
 
 
 def run():
     pass
-    # CGFuncMapper().fill_mapping(CGStorage().get_for_run_conf(CGRunConf()))
-
-    # CGAsyncRunner.run()
+    CGFuncMapper().fill_mapping(CGStorage().get_for_run_conf(CGRunConf()))
 
     # PLOT STATS PER LINE
     # func = output.get_func(CGFuncMapper().get_func(67))
@@ -78,16 +76,16 @@ def run():
     #     print(f)
 
     # PRINT THRESHOLDED FUNCTIONS
-    # output = CGParser('/home/dennisspaan/Workspace/cachalyze/out/cgrunner.out.test.32768,8,64.8388608,16,64').parse()
+    # output = CGParser('/home/dennisspaan/Workspace/cachalyze/out/cgrunner.out. .32768,8,64.8388608,16,64').parse()
     # funcs = CGAnalyzer(output).get_thresholded_functions()
     # print(output.summary)
     # for f in funcs:
     #     print(f)
 
-    # CGPlotter.plot_func('D1', '/home/dennisspaan/Workspace/test/libs/test/actions/calculations.cc:Optiver::RealisedVols::(anonymous namespace)::GenerateHedgepoints(double, unsigned long, unsigned long)')
+    # CGPlotter.plot_func('D1', '/home/dennisspaan/Workspace/ /libs/ /actions/calculations.cc:Optiver::RealisedVols::(anonymous namespace)::GenerateHedgepoints(double, unsigned long, unsigned long)')
     # 'CGPlotter.plot_funcs('D1',
-    # ['/home/dennisspaan/Workspace/test/x_common_libs/libs/common/../common/timing.h:Optiver::TimeSpan
-    # ::GetNanosecondsDouble() const', '/home/dennisspaan/Workspace/test/x_common_libs/libs/common/../common
+    # ['/home/dennisspaan/Workspace/ /x_common_libs/libs/common/../common/timing.h:Optiver::TimeSpan
+    # ::GetNanosecondsDouble() const', '/home/dennisspaan/Workspace/ /x_common_libs/libs/common/../common
     # /timing.h:Optiver::TimeSpan::GetNanosecondsDouble() const']) CGPlotter.plot_global('LL')
 
     # SINGLE RUN WITH DEFAULT CONFIG
@@ -99,11 +97,11 @@ def run():
 
     # PLOT STATISTICS
     # CGPlotter.plot_func('D1',
-    #                     '/home/dennisspaan/Workspace/test/x_common_libs/libs/platform/../logging/logger.h'
+    #                     '/home/dennisspaan/Workspace/ /x_common_libs/libs/platform/../logging/logger.h'
     #                     ':Optiver::Common '
     #                     '::Internal::Logger::Get()')
     # CGPlotter.plot_func('LL',
-    #                     '/home/dennisspaan/Workspace/test/x_common_libs/libs/platform/../logging/logger.h'
+    #                     '/home/dennisspaan/Workspace/ /x_common_libs/libs/platform/../logging/logger.h'
     #                     ':Optiver::Common '
     #                     '::Internal::Logger::Get()')
     # CGPlotter.plot_global('D1')

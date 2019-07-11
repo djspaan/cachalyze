@@ -8,10 +8,10 @@ class Logger:
             print(f'Info:\t\t\t{message}')
 
     @staticmethod
-    def warn(message):
+    def warning(message):
         print(f'Warning:\t\t{message}')
 
     @staticmethod
     def error(message):
         print(f'Error:\t\t\t{message}')
-        exit(1)
+        exit()

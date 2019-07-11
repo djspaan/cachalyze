@@ -17,5 +17,5 @@ setup(
     long_description=long_descr,
     author='Dennis Johannes Spaan',
     author_email='dennis@spaan.io',
-    url='',
+    url='https://github.com/djspaan/cachalyze',
 )
