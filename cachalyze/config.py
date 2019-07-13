@@ -32,3 +32,4 @@ class Config:
     SAVE_FIGURE = True
     OUT_DIR = ''
     OUT_PREFIX = 'callgrind.out'
+    OUT_EXT = 'cg'
