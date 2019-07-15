@@ -46,6 +46,10 @@ class CGAnalyzer:
         return events.DLmw / events.Dw * 100
 
     @staticmethod
+    def relative_cache_miss_rate(events):
+        return (events.D1mr + events.D1mw + events.DLmr + events.DLmw) / events.Dr + events.Dw
+
+    @staticmethod
     def get_count_for_cache(cache, events):
         if cache == 'D1':
             return CGAnalyzer.total_misses_d1(events)

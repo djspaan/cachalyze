@@ -97,6 +97,7 @@ class CGMultiFuncPlot(CGPlot):
         super().__init__(cache)
 
     def plot_subplots(self):
+
         # SIZE
         runs = CGStorage().get_for_param(self.cache, 'SIZE')
         sizes = [CGPlotter.convert_to_bit_str(s) for s in Config.CACHE_PARAMS[self.cache]['SIZE']]
@@ -293,10 +294,10 @@ class CGPlotter:
         analyser = CGGlobalAnalyzer(outputs)
         thres_funcs = analyser.get_thresholded_funcs()
         ch_funcs = analyser.get_functions_by_change(cache, thres_funcs)
-        # fil_ch_funcs = analyser.filter_callees(outputs[0], ch_funcs)
+        fil_ch_funcs = analyser.filter_callees(outputs[0], ch_funcs)
         for f in thres_funcs:
             print(f'{CGFuncMapper().get_mapping(f)} - {f}')
-        CGPlotter.plot_funcs(cache, thres_funcs)
+        CGPlotter.plot_funcs(cache, fil_ch_funcs)
 
     @staticmethod
     def plot_lines(cache, func, lines):
